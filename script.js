@@ -749,10 +749,16 @@ function downloadQR() {
 
 async function copyQR() {
     try {
-        // Pass a Promise directly to ClipboardItem — required for Safari
         await navigator.clipboard.write([
             new ClipboardItem({ "image/png": new Promise(resolve => canvas.toBlob(resolve)) })
         ]);
+        // Button text feedback
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy to Clipboard'; }, 2000);
+        // Toast
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, 2200);
     } catch {
         alert("Couldn't copy — try downloading instead.");
     }
