@@ -122,10 +122,22 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
         ctx.beginPath();
         ctx.arc(px + s / 2, py + s / 2, s / 2, 0, Math.PI * 2);
         ctx.fill();
-    } else if (selectedShape === 'cross') {
-        const arm = s * 0.38;
-        ctx.fillRect(px, py + (s - arm) / 2, s, arm);
-        ctx.fillRect(px + (s - arm) / 2, py, arm, s);
+    } else if (selectedShape === 'jagged') {
+        // Alternating right-angled triangles — orientation determined by cell position
+        const col = Math.round(x / cellSize);
+        const row = Math.round(y / cellSize);
+        ctx.beginPath();
+        if ((col + row) % 2 === 0) {
+            ctx.moveTo(px,     py);
+            ctx.lineTo(px + s, py);
+            ctx.lineTo(px,     py + s);
+        } else {
+            ctx.moveTo(px + s, py);
+            ctx.lineTo(px + s, py + s);
+            ctx.lineTo(px,     py + s);
+        }
+        ctx.closePath();
+        ctx.fill();
     } else if (selectedShape === 'star') {
         const scx = px + s / 2, scy = py + s / 2;
         const h = s / 2, t = h * 0.25;
