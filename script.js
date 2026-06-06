@@ -257,34 +257,29 @@ function drawModules(isDark, count, ox, oy, cs) {
                 const T = nd(row - 1, col), B = nd(row + 1, col);
                 const neighbors = (L?1:0) + (R?1:0) + (T?1:0) + (B?1:0);
                 const mx = x + cs / 2, my = y + cs / 2;
-                const cv = cs * 0.3;
+                const cv = cs * 0.55;
 
                 if (neighbors >= 2) {
                     ctx.fillRect(x, y, cs, cs);
                 } else if (neighbors === 1) {
-                    // Right-angle triangle: two straight sides along the dark neighbor's edge,
-                    // hypotenuse has a slight inward curve (quadratic bezier)
+                    // Right-angle triangle with strongly curved hypotenuse
                     ctx.beginPath();
                     if (B) {
-                        // dark below: right angle at bottom-left, tip at top-left
                         ctx.moveTo(x, y);
                         ctx.lineTo(x, y + cs);
                         ctx.lineTo(x + cs, y + cs);
                         ctx.quadraticCurveTo(mx + cv, my, x, y);
                     } else if (T) {
-                        // dark above: right angle at top-right, tip at bottom-right
                         ctx.moveTo(x + cs, y + cs);
                         ctx.lineTo(x + cs, y);
                         ctx.lineTo(x, y);
                         ctx.quadraticCurveTo(mx - cv, my, x + cs, y + cs);
                     } else if (R) {
-                        // dark right: right angle at top-right, tip at top-left
                         ctx.moveTo(x, y);
                         ctx.lineTo(x + cs, y);
                         ctx.lineTo(x + cs, y + cs);
                         ctx.quadraticCurveTo(mx, my + cv, x, y);
                     } else {
-                        // dark left: right angle at bottom-left, tip at bottom-right
                         ctx.moveTo(x + cs, y + cs);
                         ctx.lineTo(x, y + cs);
                         ctx.lineTo(x, y);
@@ -293,18 +288,11 @@ function drawModules(isDark, count, ox, oy, cs) {
                     ctx.closePath();
                     ctx.fill();
                 } else {
-                    // dian 丶: small teardrop, wide at bottom-right, pointed at top-left
-                    const r1 = cs * 0.38, r2 = cs * 0.22;
-                    const cx1 = x + cs * 0.62, cy1 = y + cs * 0.62;
-                    const cx2 = x + cs * 0.28, cy2 = y + cs * 0.28;
+                    // dian 丶: lens shape along NW-SE diagonal, skinny at both TL and BR tips
                     ctx.beginPath();
-                    ctx.arc(cx1, cy1, r1, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.beginPath();
-                    ctx.moveTo(cx1, cy1 - r1);
-                    ctx.quadraticCurveTo(cx2, cy2, cx2 - r2 * 0.5, cy2 - r2 * 0.5);
-                    ctx.quadraticCurveTo(cx2 - r2, cy2 + r2 * 0.3, cx1 - r1 * 0.6, cy1 + r1 * 0.8);
-                    ctx.arc(cx1, cy1, r1, Math.PI * 0.9, Math.PI * 1.6, false);
+                    ctx.moveTo(x + cs * 0.12, y + cs * 0.12);
+                    ctx.quadraticCurveTo(x + cs * 0.82, y + cs * 0.18, x + cs * 0.88, y + cs * 0.88);
+                    ctx.quadraticCurveTo(x + cs * 0.18, y + cs * 0.82, x + cs * 0.12, y + cs * 0.12);
                     ctx.fill();
                 }
             }
