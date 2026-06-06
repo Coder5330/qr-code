@@ -45,7 +45,8 @@ let selectedFrame = 'none';
 let selectedShape = 'default';
 let selectedLogo = 'none';
 let selectedMenu = 'frame';
-let customLogoImage = nullw
+let customLogoImage = null;
+
 // ── Utilities ──────────────────────────────────────────────────────────────
 
 function normalizeUrl(raw) {
@@ -205,15 +206,7 @@ function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
         const pillCells = new Set();
 
-        // vd: vertical distance to nearest non-dark cell (min of up/down)
-        const vd = (r, c) => {
-            let up = 0, down = 0;
-            while (r - up - 1 >= 0 && isDark(r - up - 1, c)) up++;
-            while (r + down + 1 < count && isDark(r + down + 1, c)) down++;
-            return Math.min(up, down);
-        };
-
-        // First pass: find horizontal runs and apply diamond trimming
+        // First pass: find horizontal runs where both ends are single-connection → draw as pill
         for (let r = 0; r < count; r++) {
             let c = 0;
             while (c < count) {
@@ -221,56 +214,21 @@ function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
                 let end = c;
                 while (end + 1 < count && isDark(r, end + 1) && !(checkFP && isFinderPattern(r, end + 1, count))) end++;
                 const runLen = end - c + 1;
-                const leftOpen  = !nd(r, c - 1);
-                const rightOpen = !nd(r, end + 1);
-                if (runLen >= 2 && leftOpen && rightOpen) {
-                    const trimL = vd(r, c);
-                    const trimR = vd(r, end);
-                    // Only apply diamond style if there's actual trimming or isolated run
-                    if (trimL > 0 || trimR > 0 || (!nd(r-1,c) && !nd(r+1,c) && !nd(r-1,end) && !nd(r+1,end))) {
-                        const c1 = c + trimL, c2 = end - trimR;
-                        // Draw outward ◁ triangles for left trimmed cells (point left)
-                        for (let i = c; i < c1; i++) {
-                            const tx = ox + i * cs, ty = oy + r * cs;
-                            ctx.beginPath();
-                            ctx.moveTo(tx,      ty + cs / 2);
-                            ctx.lineTo(tx + cs, ty);
-                            ctx.lineTo(tx + cs, ty + cs);
-                            ctx.closePath(); ctx.fill();
-                            pillCells.add(r * count + i);
-                        }
-                        // Draw center pill from c1 to c2
-                        if (c1 <= c2) {
-                            const px = ox + c1 * cs, py = oy + r * cs, PW = (c2 - c1 + 1) * cs;
-                            ctx.beginPath();
-                            if (c1 === c2) {
-                                // Single cell pill: diamond
-                                ctx.moveTo(px + cs / 2, py);
-                                ctx.lineTo(px + cs, py + cs / 2);
-                                ctx.lineTo(px + cs / 2, py + cs);
-                                ctx.lineTo(px, py + cs / 2);
-                            } else {
-                                ctx.moveTo(px,           py + cs / 2);
-                                ctx.lineTo(px + cs,      py);
-                                ctx.lineTo(px + PW - cs, py);
-                                ctx.lineTo(px + PW,      py + cs / 2);
-                                ctx.lineTo(px + PW - cs, py + cs);
-                                ctx.lineTo(px + cs,      py + cs);
-                            }
-                            ctx.closePath(); ctx.fill();
-                            for (let i = c1; i <= c2; i++) pillCells.add(r * count + i);
-                        }
-                        // Draw outward ▷ triangles for right trimmed cells (point right)
-                        for (let i = c2 + 1; i <= end; i++) {
-                            const tx = ox + i * cs, ty = oy + r * cs;
-                            ctx.beginPath();
-                            ctx.moveTo(tx,      ty);
-                            ctx.lineTo(tx + cs, ty + cs / 2);
-                            ctx.lineTo(tx,      ty + cs);
-                            ctx.closePath(); ctx.fill();
-                            pillCells.add(r * count + i);
-                        }
-                    }
+                // Both ends must have exactly 1 connection (only horizontal, no T/B)
+                const leftFree  = !nd(r, c - 1)   && !nd(r - 1, c)   && !nd(r + 1, c);
+                const rightFree = !nd(r, end + 1)  && !nd(r - 1, end) && !nd(r + 1, end);
+                if (runLen >= 2 && leftFree && rightFree) {
+                    const x = ox + c * cs, y = oy + r * cs, W = runLen * cs;
+                    ctx.beginPath();
+                    ctx.moveTo(x,          y + cs / 2); // left tip
+                    ctx.lineTo(x + cs,     y);           // top-left corner of rect
+                    ctx.lineTo(x + W - cs, y);           // top-right corner of rect
+                    ctx.lineTo(x + W,      y + cs / 2); // right tip
+                    ctx.lineTo(x + W - cs, y + cs);     // bottom-right corner
+                    ctx.lineTo(x + cs,     y + cs);     // bottom-left corner
+                    ctx.closePath();
+                    ctx.fill();
+                    for (let i = c; i <= end; i++) pillCells.add(r * count + i);
                 }
                 c = end + 1;
             }
