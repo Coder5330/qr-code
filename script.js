@@ -692,6 +692,16 @@ function selectShape(shape) {
     selectedShape = shape;
     setSelected('.style-shape-choices', 'data-shape', shape);
     drawQR(input.value);
+    if (shape === 'wavy' && !localStorage.getItem('wavyWarnDismissed')) {
+        document.getElementById('wavy-modal').style.display = 'flex';
+    }
+}
+
+function closeWavyModal() {
+    if (document.getElementById('wavy-no-show').checked) {
+        localStorage.setItem('wavyWarnDismissed', '1');
+    }
+    document.getElementById('wavy-modal').style.display = 'none';
 }
 
 function selectLogo(logo) {

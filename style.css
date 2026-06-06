@@ -300,3 +300,81 @@ canvas {
     min-height: 18px;
     margin: 0;
 }
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px 24px;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: slideUp 0.18s ease;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(12px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-icon { font-size: 36px; line-height: 1; }
+
+.modal-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #111;
+}
+
+.modal-body {
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.modal-check {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+    margin-top: 4px;
+}
+
+.modal-btn {
+    margin-top: 6px;
+    width: 100%;
+    padding: 11px;
+    background: #10b981;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.modal-btn:hover { background: #059669; }
