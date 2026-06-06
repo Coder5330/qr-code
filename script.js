@@ -162,12 +162,40 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
         ctx.quadraticCurveTo(px + cl,    py + s / 2,    px,     py);
         ctx.closePath();
         ctx.fill();
-    } else if (selectedShape === 'corners') {
-        const cs = s * 0.44;
-        ctx.fillRect(px,          py,          cs, cs);
-        ctx.fillRect(px + s - cs, py,          cs, cs);
-        ctx.fillRect(px,          py + s - cs, cs, cs);
-        ctx.fillRect(px + s - cs, py + s - cs, cs, cs);
+    } else if (selectedShape === 'arcs') {
+        const col = Math.round(x / cellSize);
+        const row = Math.round(y / cellSize);
+        const corner = (col + row * 2) % 4;
+        const r = s * 0.65;
+        ctx.beginPath();
+        if (corner === 0) {           // concave arc at top-left
+            ctx.moveTo(px + r, py);
+            ctx.lineTo(px + s, py);
+            ctx.lineTo(px + s, py + s);
+            ctx.lineTo(px,     py + s);
+            ctx.lineTo(px,     py + r);
+            ctx.arc(px, py, r, Math.PI / 2, 0, true);
+        } else if (corner === 1) {    // concave arc at top-right
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + s - r, py);
+            ctx.arc(px + s, py, r, Math.PI, Math.PI / 2, true);
+            ctx.lineTo(px + s, py + s);
+            ctx.lineTo(px,     py + s);
+        } else if (corner === 2) {    // concave arc at bottom-right
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + s, py);
+            ctx.lineTo(px + s, py + s - r);
+            ctx.arc(px + s, py + s, r, Math.PI * 3 / 2, Math.PI, true);
+            ctx.lineTo(px, py + s);
+        } else {                      // concave arc at bottom-left
+            ctx.moveTo(px, py);
+            ctx.lineTo(px + s, py);
+            ctx.lineTo(px + s, py + s);
+            ctx.lineTo(px + r, py + s);
+            ctx.arc(px, py + s, r, 0, Math.PI * 3 / 2, true);
+        }
+        ctx.closePath();
+        ctx.fill();
     }
 }
 

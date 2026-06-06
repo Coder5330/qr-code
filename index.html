@@ -174,23 +174,23 @@
                         </div>
                         <span>Wavy</span>
                     </button>
-                    <button class="choice-btn" onclick="selectShape('corners')" data-shape="corners">
+                    <button class="choice-btn" onclick="selectShape('arcs')" data-shape="arcs">
                         <div class="choice-icon">
                             <svg viewBox="0 0 28 28" width="28" height="28">
                                 <g fill="#111">
-                                    <rect x="1" y="1" width="3" height="3"/><rect x="5" y="1" width="3" height="3"/><rect x="1" y="5" width="3" height="3"/><rect x="5" y="5" width="3" height="3"/>
-                                    <rect x="11" y="1" width="3" height="3"/><rect x="15" y="1" width="3" height="3"/><rect x="11" y="5" width="3" height="3"/><rect x="15" y="5" width="3" height="3"/>
-                                    <rect x="21" y="1" width="3" height="3"/><rect x="25" y="1" width="3" height="3"/><rect x="21" y="5" width="3" height="3"/><rect x="25" y="5" width="3" height="3"/>
-                                    <rect x="1" y="11" width="3" height="3"/><rect x="5" y="11" width="3" height="3"/><rect x="1" y="15" width="3" height="3"/><rect x="5" y="15" width="3" height="3"/>
-                                    <rect x="11" y="11" width="3" height="3"/><rect x="15" y="11" width="3" height="3"/><rect x="11" y="15" width="3" height="3"/><rect x="15" y="15" width="3" height="3"/>
-                                    <rect x="21" y="11" width="3" height="3"/><rect x="25" y="11" width="3" height="3"/><rect x="21" y="15" width="3" height="3"/><rect x="25" y="15" width="3" height="3"/>
-                                    <rect x="1" y="21" width="3" height="3"/><rect x="5" y="21" width="3" height="3"/><rect x="1" y="25" width="3" height="3"/><rect x="5" y="25" width="3" height="3"/>
-                                    <rect x="11" y="21" width="3" height="3"/><rect x="15" y="21" width="3" height="3"/><rect x="11" y="25" width="3" height="3"/><rect x="15" y="25" width="3" height="3"/>
-                                    <rect x="21" y="21" width="3" height="3"/><rect x="25" y="21" width="3" height="3"/><rect x="21" y="25" width="3" height="3"/><rect x="25" y="25" width="3" height="3"/>
+                                    <path d="M5,0 L8,0 L8,8 L0,8 L0,5 A5,5,0,0,0,5,0Z"/>
+                                    <path d="M10,0 L13,0 A5,5,0,0,0,18,5 L18,8 L10,8Z"/>
+                                    <path d="M20,0 L28,0 L28,3 A5,5,0,0,0,23,8 L20,8Z"/>
+                                    <path d="M0,10 L8,10 L8,13 A5,5,0,0,0,3,18 L0,18Z"/>
+                                    <path d="M10,10 L18,10 L18,18 L15,18 A5,5,0,0,0,10,13Z"/>
+                                    <path d="M25,10 L28,10 L28,18 L20,18 L20,15 A5,5,0,0,0,25,10Z"/>
+                                    <path d="M5,20 L8,20 L8,28 L0,28 L0,25 A5,5,0,0,0,5,20Z"/>
+                                    <path d="M10,20 L13,20 A5,5,0,0,0,18,25 L18,28 L10,28Z"/>
+                                    <path d="M20,20 L28,20 L28,23 A5,5,0,0,0,23,28 L20,28Z"/>
                                 </g>
                             </svg>
                         </div>
-                        <span>Corners</span>
+                        <span>Arcs</span>
                     </button>
                     <button class="choice-btn" onclick="selectShape('dot')" data-shape="dot">
                         <div class="choice-icon"><div class="dot-grid dot-grid-cls"></div></div>
@@ -237,6 +237,6 @@
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-        <script src="script.js?v=12"></script>
+        <script src="script.js?v=13"></script>
     </body>
 </html>
