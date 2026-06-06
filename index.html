@@ -107,17 +107,13 @@
                         <div class="choice-icon"><div class="dot-grid default-grid"></div></div>
                         <span>Default</span>
                     </button>
-                    <button class="choice-btn" onclick="selectShape('square')" data-shape="square">
-                        <div class="choice-icon"><div class="dot-grid square-grid"></div></div>
-                        <span>Square</span>
-                    </button>
                     <button class="choice-btn" onclick="selectShape('rounded')" data-shape="rounded">
                         <div class="choice-icon"><div class="dot-grid rounded-grid"></div></div>
                         <span>Rounded</span>
                     </button>
-                    <button class="choice-btn" onclick="selectShape('dot')" data-shape="dot">
-                        <div class="choice-icon"><div class="dot-grid dot-grid-cls"></div></div>
-                        <span>Dots</span>
+                    <button class="choice-btn" onclick="selectShape('horizontal')" data-shape="horizontal">
+                        <div class="choice-icon"><div class="dot-grid horizontal-grid"></div></div>
+                        <span>Bars</span>
                     </button>
                     <button class="choice-btn" onclick="selectShape('diamond')" data-shape="diamond">
                         <div class="choice-icon">
@@ -134,6 +130,63 @@
                             </svg>
                         </div>
                         <span>Diamond</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectShape('cross')" data-shape="cross">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 28 28" width="28" height="28">
+                                <g fill="#111">
+                                    <rect x="2" y="4" width="6" height="2"/><rect x="4" y="2" width="2" height="6"/>
+                                    <rect x="11" y="4" width="6" height="2"/><rect x="13" y="2" width="2" height="6"/>
+                                    <rect x="20" y="4" width="6" height="2"/><rect x="22" y="2" width="2" height="6"/>
+                                    <rect x="2" y="13" width="6" height="2"/><rect x="4" y="11" width="2" height="6"/>
+                                    <rect x="11" y="13" width="6" height="2"/><rect x="13" y="11" width="2" height="6"/>
+                                    <rect x="20" y="13" width="6" height="2"/><rect x="22" y="11" width="2" height="6"/>
+                                    <rect x="2" y="22" width="6" height="2"/><rect x="4" y="20" width="2" height="6"/>
+                                    <rect x="11" y="22" width="6" height="2"/><rect x="13" y="20" width="2" height="6"/>
+                                    <rect x="20" y="22" width="6" height="2"/><rect x="22" y="20" width="2" height="6"/>
+                                </g>
+                            </svg>
+                        </div>
+                        <span>Cross</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectShape('star')" data-shape="star">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 28 28" width="28" height="28">
+                                <defs><path id="sp" d="M0,-4 Q-1,-1 -4,0 Q-1,1 0,4 Q1,1 4,0 Q1,-1 0,-4Z"/></defs>
+                                <use href="#sp" transform="translate(5,5)" fill="#111"/>
+                                <use href="#sp" transform="translate(14,5)" fill="#111"/>
+                                <use href="#sp" transform="translate(23,5)" fill="#111"/>
+                                <use href="#sp" transform="translate(5,14)" fill="#111"/>
+                                <use href="#sp" transform="translate(14,14)" fill="#111"/>
+                                <use href="#sp" transform="translate(23,14)" fill="#111"/>
+                                <use href="#sp" transform="translate(5,23)" fill="#111"/>
+                                <use href="#sp" transform="translate(14,23)" fill="#111"/>
+                                <use href="#sp" transform="translate(23,23)" fill="#111"/>
+                            </svg>
+                        </div>
+                        <span>Star</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectShape('corners')" data-shape="corners">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 28 28" width="28" height="28">
+                                <g fill="#111">
+                                    <rect x="1" y="1" width="3" height="3"/><rect x="5" y="1" width="3" height="3"/><rect x="1" y="5" width="3" height="3"/><rect x="5" y="5" width="3" height="3"/>
+                                    <rect x="11" y="1" width="3" height="3"/><rect x="15" y="1" width="3" height="3"/><rect x="11" y="5" width="3" height="3"/><rect x="15" y="5" width="3" height="3"/>
+                                    <rect x="21" y="1" width="3" height="3"/><rect x="25" y="1" width="3" height="3"/><rect x="21" y="5" width="3" height="3"/><rect x="25" y="5" width="3" height="3"/>
+                                    <rect x="1" y="11" width="3" height="3"/><rect x="5" y="11" width="3" height="3"/><rect x="1" y="15" width="3" height="3"/><rect x="5" y="15" width="3" height="3"/>
+                                    <rect x="11" y="11" width="3" height="3"/><rect x="15" y="11" width="3" height="3"/><rect x="11" y="15" width="3" height="3"/><rect x="15" y="15" width="3" height="3"/>
+                                    <rect x="21" y="11" width="3" height="3"/><rect x="25" y="11" width="3" height="3"/><rect x="21" y="15" width="3" height="3"/><rect x="25" y="15" width="3" height="3"/>
+                                    <rect x="1" y="21" width="3" height="3"/><rect x="5" y="21" width="3" height="3"/><rect x="1" y="25" width="3" height="3"/><rect x="5" y="25" width="3" height="3"/>
+                                    <rect x="11" y="21" width="3" height="3"/><rect x="15" y="21" width="3" height="3"/><rect x="11" y="25" width="3" height="3"/><rect x="15" y="25" width="3" height="3"/>
+                                    <rect x="21" y="21" width="3" height="3"/><rect x="25" y="21" width="3" height="3"/><rect x="21" y="25" width="3" height="3"/><rect x="25" y="25" width="3" height="3"/>
+                                </g>
+                            </svg>
+                        </div>
+                        <span>Corners</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectShape('dot')" data-shape="dot">
+                        <div class="choice-icon"><div class="dot-grid dot-grid-cls"></div></div>
+                        <span>Dots</span>
                     </button>
                 </div>
 
@@ -176,6 +229,6 @@
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-        <script src="script.js?v=8"></script>
+        <script src="script.js?v=9"></script>
     </body>
 </html>

@@ -213,6 +213,21 @@ input:focus {
         radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 21px 21px / 6px 6px no-repeat;
 }
 
+/* Horizontal bars */
+.horizontal-grid {
+    width: 28px; height: 28px;
+    background:
+        linear-gradient(#111 0 0) 0px 2.5px / 8px 3.5px no-repeat,
+        linear-gradient(#111 0 0) 10px 2.5px / 8px 3.5px no-repeat,
+        linear-gradient(#111 0 0) 20px 2.5px / 8px 3.5px no-repeat,
+        linear-gradient(#111 0 0) 0px 12.5px / 8px 3.5px no-repeat,
+        linear-gradient(#111 0 0) 10px 12.5px / 8px 3.5px no-repeat,
+        linear-gradient(#111 0 0) 20px 12.5px / 8px 3.5px no-repeat,
+        linear-gradient(#111 0 0) 0px 22.5px / 8px 3.5px no-repeat,
+        linear-gradient(#111 0 0) 10px 22.5px / 8px 3.5px no-repeat,
+        linear-gradient(#111 0 0) 20px 22.5px / 8px 3.5px no-repeat;
+}
+
 /* Dots: circles */
 .dot-grid-cls {
     width: 28px; height: 28px;

@@ -113,6 +113,30 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
         const ds = s * 0.72;
         ctx.fillRect(-ds / 2, -ds / 2, ds, ds);
         ctx.restore();
+    } else if (selectedShape === 'horizontal') {
+        const bh = cellSize * 0.5;
+        ctx.fillRect(x, y + (cellSize - bh) / 2, cellSize, bh);
+    } else if (selectedShape === 'cross') {
+        const arm = s * 0.38;
+        ctx.fillRect(px, py + (s - arm) / 2, s, arm);
+        ctx.fillRect(px + (s - arm) / 2, py, arm, s);
+    } else if (selectedShape === 'star') {
+        const scx = px + s / 2, scy = py + s / 2;
+        const h = s / 2, t = h * 0.25;
+        ctx.beginPath();
+        ctx.moveTo(scx, scy - h);
+        ctx.quadraticCurveTo(scx - t, scy - t, scx - h, scy);
+        ctx.quadraticCurveTo(scx - t, scy + t, scx, scy + h);
+        ctx.quadraticCurveTo(scx + t, scy + t, scx + h, scy);
+        ctx.quadraticCurveTo(scx + t, scy - t, scx, scy - h);
+        ctx.closePath();
+        ctx.fill();
+    } else if (selectedShape === 'corners') {
+        const cs = s * 0.44;
+        ctx.fillRect(px,         py,         cs, cs);
+        ctx.fillRect(px + s - cs, py,         cs, cs);
+        ctx.fillRect(px,         py + s - cs, cs, cs);
+        ctx.fillRect(px + s - cs, py + s - cs, cs, cs);
     }
 }
 
