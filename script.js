@@ -245,56 +245,56 @@ function drawModules(isDark, count, ox, oy, cs) {
             }
         }
     } else if (selectedShape === 'arcs') {
-        // Subtractive: solid squares first, then per exposed corner:
-        // white square (same size as cell) punches the corner,
-        // black quarter-circle arc restores the curved portion.
-        // Only applied where BOTH adjacent neighbors are absent.
+        // Outward-rounding pipe style: outer corners get convex arcs,
+        // inner L-junctions get a wedge fill to bridge the concave notch.
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
-        const ar = cs;
+        const ar = cs * 0.32;
+        for (let row = 0; row < count; row++) {
+            for (let col = 0; col < count; col++) {
+                if (!isDark(row, col)) continue;
+                const x = ox + col * cs, y = oy + row * cs;
+                if (isFinderPattern(row, col, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                const L = nd(row, col - 1), R = nd(row, col + 1);
+                const T = nd(row - 1, col), B = nd(row + 1, col);
+                const tl = !T && !L, tr = !T && !R, br = !B && !R, bl = !B && !L;
 
-        // Pass 1: solid black squares
-        for (let r = 0; r < count; r++)
-            for (let c = 0; c < count; c++)
-                if (isDark(r, c)) ctx.fillRect(ox + c * cs, oy + r * cs, cs, cs);
+                // Cell body with convex outer-corner arcs
+                ctx.beginPath();
+                ctx.moveTo(tl ? x + ar : x, y);
+                ctx.lineTo(tr ? x + cs - ar : x + cs, y);
+                if (tr) ctx.arc(x + cs - ar, y + ar, ar, 3 * Math.PI / 2, 0, false);
+                ctx.lineTo(x + cs, br ? y + cs - ar : y + cs);
+                if (br) ctx.arc(x + cs - ar, y + cs - ar, ar, 0, Math.PI / 2, false);
+                ctx.lineTo(bl ? x + ar : x, y + cs);
+                if (bl) ctx.arc(x + ar, y + cs - ar, ar, Math.PI / 2, Math.PI, false);
+                ctx.lineTo(x, tl ? y + ar : y);
+                if (tl) ctx.arc(x + ar, y + ar, ar, Math.PI, 3 * Math.PI / 2, false);
+                ctx.closePath();
+                ctx.fill();
 
-        // Pass 2: subtractive arc at each exposed outer corner
-        for (let r = 0; r < count; r++) {
-            for (let c = 0; c < count; c++) {
-                if (!isDark(r, c) || isFinderPattern(r, c, count)) continue;
-                const x = ox + c * cs, y = oy + r * cs;
-                const L = nd(r, c-1), R = nd(r, c+1), T = nd(r-1, c), B = nd(r+1, c);
-
-                // TL exposed
-                if (!T && !L) {
-                    ctx.fillStyle = '#fff'; ctx.fillRect(x, y, ar, ar);
-                    ctx.fillStyle = '#111'; ctx.beginPath();
-                    ctx.moveTo(x, y); ctx.arc(x, y, ar, 0, Math.PI/2, false);
+                // Fill 270° inner-corner notches at L-junctions
+                if (T && L) {
+                    ctx.beginPath(); ctx.moveTo(x, y);
+                    ctx.arc(x, y, ar, Math.PI, 3 * Math.PI / 2, false);
                     ctx.closePath(); ctx.fill();
                 }
-                // TR exposed
-                if (!T && !R) {
-                    ctx.fillStyle = '#fff'; ctx.fillRect(x+cs-ar, y, ar, ar);
-                    ctx.fillStyle = '#111'; ctx.beginPath();
-                    ctx.moveTo(x+cs, y); ctx.arc(x+cs, y, ar, Math.PI/2, Math.PI, false);
+                if (T && R) {
+                    ctx.beginPath(); ctx.moveTo(x + cs, y);
+                    ctx.arc(x + cs, y, ar, 3 * Math.PI / 2, 0, false);
                     ctx.closePath(); ctx.fill();
                 }
-                // BR exposed
-                if (!B && !R) {
-                    ctx.fillStyle = '#fff'; ctx.fillRect(x+cs-ar, y+cs-ar, ar, ar);
-                    ctx.fillStyle = '#111'; ctx.beginPath();
-                    ctx.moveTo(x+cs, y+cs); ctx.arc(x+cs, y+cs, ar, Math.PI, 3*Math.PI/2, false);
+                if (B && R) {
+                    ctx.beginPath(); ctx.moveTo(x + cs, y + cs);
+                    ctx.arc(x + cs, y + cs, ar, 0, Math.PI / 2, false);
                     ctx.closePath(); ctx.fill();
                 }
-                // BL exposed
-                if (!B && !L) {
-                    ctx.fillStyle = '#fff'; ctx.fillRect(x, y+cs-ar, ar, ar);
-                    ctx.fillStyle = '#111'; ctx.beginPath();
-                    ctx.moveTo(x, y+cs); ctx.arc(x, y+cs, ar, 3*Math.PI/2, 2*Math.PI, false);
+                if (B && L) {
+                    ctx.beginPath(); ctx.moveTo(x, y + cs);
+                    ctx.arc(x, y + cs, ar, Math.PI / 2, Math.PI, false);
                     ctx.closePath(); ctx.fill();
                 }
             }
         }
-        ctx.fillStyle = '#111';
     } else {
         for (let r = 0; r < count; r++)
             for (let c = 0; c < count; c++)
