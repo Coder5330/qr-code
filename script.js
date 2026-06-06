@@ -83,9 +83,14 @@ function strokeRR(x, y, w, h, r) {
 
 // ── Module drawing ─────────────────────────────────────────────────────────
 
+function isFinderPattern(r, c, count) {
+    return (r < 7 && c < 7) || (r < 7 && c >= count - 7) || (r >= count - 7 && c < 7);
+}
+
 // cellSize defaults to global CELL; pass a value for circle-frame scaled drawing
-function drawModule(x, y, cellSize = CELL) {
-    if (selectedShape === 'default') {
+// forceSquare: true for finder patterns so scanners can always locate the QR
+function drawModule(x, y, cellSize = CELL, forceSquare = false) {
+    if (forceSquare || selectedShape === 'default') {
         ctx.fillRect(x, y, cellSize, cellSize);
         return;
     }
@@ -308,7 +313,7 @@ function renderMatrix(isDark, count, alpha = 1) {
     ctx.fillStyle = '#111';
     for (let r = 0; r < count; r++)
         for (let c = 0; c < count; c++)
-            if (isDark(r, c)) drawModule(ox + c * CELL, oy + r * CELL);
+            if (isDark(r, c)) drawModule(ox + c * CELL, oy + r * CELL, CELL, isFinderPattern(r, c, count));
     drawFrameText(W, H, ft, fb);
     if (selectedLogo !== 'none') drawLogo(ox, oy, count);
     ctx.globalAlpha = 1;
@@ -428,7 +433,7 @@ function drawCircleFrame(qr, count, alpha = 1) {
     ctx.fillStyle = '#111';
     for (let r = 0; r < count; r++) {
         for (let c = 0; c < count; c++) {
-            if (qr.isDark(r, c)) drawModule(ox + c * cell, oy + r * cell, cell); // works for both qrcode obj and {isDark} wrapper
+            if (qr.isDark(r, c)) drawModule(ox + c * cell, oy + r * cell, cell, isFinderPattern(r, c, count));
         }
     }
 
