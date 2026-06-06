@@ -110,28 +110,30 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
         ctx.arc(px + s / 2, py + s / 2, s / 2, 0, Math.PI * 2);
         ctx.fill();
     } else if (selectedShape === 'wavy') {
-        // Sine wave distortion using global pixel coords so adjacent cells share edge formulas
-        const A = cellSize * 0.15;
-        const lam = cellSize * 2.5;
-        const N = 8;
+        // Warp all 4 corners via 2D sine — shared global coords means adjacent cells match at edges.
+        // Edges drawn as bezier S-curves through the warped midpoint of each edge.
+        const A = cellSize * 0.24, lam = cellSize * 2.6;
+        const W = (gx, gy) => [
+            gx + A * Math.sin(2 * Math.PI * gy / lam + 0.9),
+            gy + A * Math.sin(2 * Math.PI * gx / lam)
+        ];
+        const curve = (p0, mgx, mgy, p2) => {
+            const [mx, my] = W(mgx, mgy);
+            ctx.bezierCurveTo(
+                (p0[0] * 2 + mx) / 3, (p0[1] * 2 + my) / 3,
+                (p2[0] * 2 + mx) / 3, (p2[1] * 2 + my) / 3,
+                p2[0], p2[1]
+            );
+        };
+        const cs = cellSize;
+        const tl = W(x, y), tr = W(x + cs, y);
+        const br = W(x + cs, y + cs), bl = W(x, y + cs);
         ctx.beginPath();
-        for (let i = 0; i <= N; i++) {
-            const ex = x + cellSize * i / N;
-            const ey = y + A * Math.sin(2 * Math.PI * ex / lam);
-            i === 0 ? ctx.moveTo(ex, ey) : ctx.lineTo(ex, ey);
-        }
-        for (let i = 1; i <= N; i++) {
-            const ey = y + cellSize * i / N;
-            ctx.lineTo(x + cellSize + A * Math.sin(2 * Math.PI * ey / lam), ey);
-        }
-        for (let i = N - 1; i >= 0; i--) {
-            const ex = x + cellSize * i / N;
-            ctx.lineTo(ex, y + cellSize + A * Math.sin(2 * Math.PI * ex / lam));
-        }
-        for (let i = N - 1; i >= 0; i--) {
-            const ey = y + cellSize * i / N;
-            ctx.lineTo(x + A * Math.sin(2 * Math.PI * ey / lam), ey);
-        }
+        ctx.moveTo(tl[0], tl[1]);
+        curve(tl, x + cs / 2, y,        tr);
+        curve(tr, x + cs,     y + cs / 2, br);
+        curve(br, x + cs / 2, y + cs,   bl);
+        curve(bl, x,          y + cs / 2, tl);
         ctx.closePath();
         ctx.fill();
     } else {
@@ -178,7 +180,7 @@ function drawModules(isDark, count, ox, oy, cs) {
         }
     } else if (selectedShape === 'chamfered') {
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
-        const cl = cs * 0.25;
+        const cl = cs * 0.38;
         for (let r = 0; r < count; r++) {
             for (let c = 0; c < count; c++) {
                 if (!isDark(r, c)) continue;
@@ -216,25 +218,25 @@ function drawModules(isDark, count, ox, oy, cs) {
                     ctx.lineTo(x + cs / 2, y + cs);
                     ctx.lineTo(x, y + cs / 2);
                 } else if (R && !L && !T && !B) {
-                    // horizontal run start: spike pointing left
-                    ctx.moveTo(x, y + cs / 2);
-                    ctx.lineTo(x + cs, y);
-                    ctx.lineTo(x + cs, y + cs);
-                } else if (L && !R && !T && !B) {
-                    // horizontal run end: spike pointing right
+                    // horizontal run start: point right ▶
                     ctx.moveTo(x, y);
                     ctx.lineTo(x + cs, y + cs / 2);
                     ctx.lineTo(x, y + cs);
-                } else if (B && !T && !L && !R) {
-                    // vertical run start: spike pointing up
-                    ctx.moveTo(x + cs / 2, y);
+                } else if (L && !R && !T && !B) {
+                    // horizontal run end: point left ◀
+                    ctx.moveTo(x, y + cs / 2);
+                    ctx.lineTo(x + cs, y);
                     ctx.lineTo(x + cs, y + cs);
-                    ctx.lineTo(x, y + cs);
-                } else if (T && !B && !L && !R) {
-                    // vertical run end: spike pointing down
+                } else if (B && !T && !L && !R) {
+                    // vertical run start: point down ▼
                     ctx.moveTo(x, y);
                     ctx.lineTo(x + cs, y);
                     ctx.lineTo(x + cs / 2, y + cs);
+                } else if (T && !B && !L && !R) {
+                    // vertical run end: point up ▲
+                    ctx.moveTo(x + cs / 2, y);
+                    ctx.lineTo(x + cs, y + cs);
+                    ctx.lineTo(x, y + cs);
                 } else {
                     ctx.rect(x, y, cs, cs);
                 }
