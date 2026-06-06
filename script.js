@@ -245,10 +245,13 @@ function drawModules(isDark, count, ox, oy, cs) {
             }
         }
     } else if (selectedShape === 'arcs') {
-        // Outward-rounding pipe style: outer corners get convex arcs,
-        // inner L-junctions get a wedge fill to bridge the concave notch.
+        // Bauhaus stencil: flat straight edges, precise quarter-circle arcs only at corners.
+        // Outer corner (both neighbors absent): convex arc, center inset inside cell.
+        // Inner corner (both neighbors present): concave arc, center at the actual corner point.
+        // Mixed corner (one neighbor): sharp right angle, no arc.
+        // Single path per cell — no extra fill passes, no blobs.
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
-        const ar = cs * 0.32;
+        const ar = cs * 0.35;
         for (let row = 0; row < count; row++) {
             for (let col = 0; col < count; col++) {
                 if (!isDark(row, col)) continue;
@@ -256,43 +259,33 @@ function drawModules(isDark, count, ox, oy, cs) {
                 if (isFinderPattern(row, col, count)) { ctx.fillRect(x, y, cs, cs); continue; }
                 const L = nd(row, col - 1), R = nd(row, col + 1);
                 const T = nd(row - 1, col), B = nd(row + 1, col);
-                const tl = !T && !L, tr = !T && !R, br = !B && !R, bl = !B && !L;
+                // Arc extent: ar when outer (both absent) or inner (both present), 0 for mixed
+                const tle = (T === L) ? ar : 0;
+                const tre = (T === R) ? ar : 0;
+                const bre = (B === R) ? ar : 0;
+                const ble = (B === L) ? ar : 0;
 
-                // Cell body with convex outer-corner arcs
                 ctx.beginPath();
-                ctx.moveTo(tl ? x + ar : x, y);
-                ctx.lineTo(tr ? x + cs - ar : x + cs, y);
-                if (tr) ctx.arc(x + cs - ar, y + ar, ar, 3 * Math.PI / 2, 0, false);
-                ctx.lineTo(x + cs, br ? y + cs - ar : y + cs);
-                if (br) ctx.arc(x + cs - ar, y + cs - ar, ar, 0, Math.PI / 2, false);
-                ctx.lineTo(bl ? x + ar : x, y + cs);
-                if (bl) ctx.arc(x + ar, y + cs - ar, ar, Math.PI / 2, Math.PI, false);
-                ctx.lineTo(x, tl ? y + ar : y);
-                if (tl) ctx.arc(x + ar, y + ar, ar, Math.PI, 3 * Math.PI / 2, false);
+                ctx.moveTo(x + tle, y);
+
+                ctx.lineTo(x + cs - tre, y);
+                if      (!T && !R) ctx.arc(x+cs-ar, y+ar,    ar, 3*Math.PI/2, 0,          false); // TR outer convex
+                else if ( T &&  R) ctx.arc(x+cs,    y,       ar, Math.PI,     Math.PI/2,  true);  // TR inner concave
+
+                ctx.lineTo(x + cs, y + cs - bre);
+                if      (!B && !R) ctx.arc(x+cs-ar, y+cs-ar, ar, 0,           Math.PI/2,  false); // BR outer convex
+                else if ( B &&  R) ctx.arc(x+cs,    y+cs,    ar, 3*Math.PI/2, Math.PI,    true);  // BR inner concave
+
+                ctx.lineTo(x + ble, y + cs);
+                if      (!B && !L) ctx.arc(x+ar,    y+cs-ar, ar, Math.PI/2,   Math.PI,    false); // BL outer convex
+                else if ( B &&  L) ctx.arc(x,       y+cs,    ar, 0,           3*Math.PI/2,true);  // BL inner concave
+
+                ctx.lineTo(x, y + tle);
+                if      (!T && !L) ctx.arc(x+ar,    y+ar,    ar, Math.PI,     3*Math.PI/2,false); // TL outer convex
+                else if ( T &&  L) ctx.arc(x,       y,       ar, Math.PI/2,   0,          true);  // TL inner concave
+
                 ctx.closePath();
                 ctx.fill();
-
-                // Fill 270° inner-corner notches at L-junctions
-                if (T && L) {
-                    ctx.beginPath(); ctx.moveTo(x, y);
-                    ctx.arc(x, y, ar, Math.PI, 3 * Math.PI / 2, false);
-                    ctx.closePath(); ctx.fill();
-                }
-                if (T && R) {
-                    ctx.beginPath(); ctx.moveTo(x + cs, y);
-                    ctx.arc(x + cs, y, ar, 3 * Math.PI / 2, 0, false);
-                    ctx.closePath(); ctx.fill();
-                }
-                if (B && R) {
-                    ctx.beginPath(); ctx.moveTo(x + cs, y + cs);
-                    ctx.arc(x + cs, y + cs, ar, 0, Math.PI / 2, false);
-                    ctx.closePath(); ctx.fill();
-                }
-                if (B && L) {
-                    ctx.beginPath(); ctx.moveTo(x, y + cs);
-                    ctx.arc(x, y + cs, ar, Math.PI / 2, Math.PI, false);
-                    ctx.closePath(); ctx.fill();
-                }
             }
         }
     } else {
