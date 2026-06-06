@@ -245,49 +245,30 @@ function drawModules(isDark, count, ox, oy, cs) {
             }
         }
     } else if (selectedShape === 'arcs') {
-        // Bauhaus stencil: flat straight edges, precise quarter-circle arcs only at corners.
-        // Outer corner (both neighbors absent): convex arc, center inset inside cell.
-        // Inner corner (both neighbors present): concave arc, center at the actual corner point.
-        // Mixed corner (one neighbor): sharp right angle, no arc.
-        // Single path per cell — no extra fill passes, no blobs.
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
-        const ar = cs * 0.35;
+        const cr = cs * 0.38;
+
+        // Pass 1: solid black squares for every dark module
+        for (let row = 0; row < count; row++)
+            for (let col = 0; col < count; col++)
+                if (isDark(row, col)) ctx.fillRect(ox + col * cs, oy + row * cs, cs, cs);
+
+        // Pass 2: white circles punch exposed outer corners — no path math needed
+        ctx.fillStyle = '#fff';
         for (let row = 0; row < count; row++) {
             for (let col = 0; col < count; col++) {
                 if (!isDark(row, col)) continue;
+                if (isFinderPattern(row, col, count)) continue;
                 const x = ox + col * cs, y = oy + row * cs;
-                if (isFinderPattern(row, col, count)) { ctx.fillRect(x, y, cs, cs); continue; }
-                const L = nd(row, col - 1), R = nd(row, col + 1);
-                const T = nd(row - 1, col), B = nd(row + 1, col);
-                // Arc extent: ar when outer (both absent) or inner (both present), 0 for mixed
-                const tle = (T === L) ? ar : 0;
-                const tre = (T === R) ? ar : 0;
-                const bre = (B === R) ? ar : 0;
-                const ble = (B === L) ? ar : 0;
-
-                ctx.beginPath();
-                ctx.moveTo(x + tle, y);
-
-                ctx.lineTo(x + cs - tre, y);
-                if      (!T && !R) ctx.arc(x+cs-ar, y+ar,    ar, 3*Math.PI/2, 0,          false); // TR outer convex
-                else if ( T &&  R) ctx.arc(x+cs,    y,       ar, Math.PI,     Math.PI/2,  true);  // TR inner concave
-
-                ctx.lineTo(x + cs, y + cs - bre);
-                if      (!B && !R) ctx.arc(x+cs-ar, y+cs-ar, ar, 0,           Math.PI/2,  false); // BR outer convex
-                else if ( B &&  R) ctx.arc(x+cs,    y+cs,    ar, 3*Math.PI/2, Math.PI,    true);  // BR inner concave
-
-                ctx.lineTo(x + ble, y + cs);
-                if      (!B && !L) ctx.arc(x+ar,    y+cs-ar, ar, Math.PI/2,   Math.PI,    false); // BL outer convex
-                else if ( B &&  L) ctx.arc(x,       y+cs,    ar, 0,           3*Math.PI/2,true);  // BL inner concave
-
-                ctx.lineTo(x, y + tle);
-                if      (!T && !L) ctx.arc(x+ar,    y+ar,    ar, Math.PI,     3*Math.PI/2,false); // TL outer convex
-                else if ( T &&  L) ctx.arc(x,       y,       ar, Math.PI/2,   0,          true);  // TL inner concave
-
-                ctx.closePath();
-                ctx.fill();
+                const L = nd(row, col-1), R = nd(row, col+1);
+                const T = nd(row-1, col), B = nd(row+1, col);
+                if (!T && !L) { ctx.beginPath(); ctx.arc(x,    y,    cr, 0, Math.PI*2); ctx.fill(); }
+                if (!T && !R) { ctx.beginPath(); ctx.arc(x+cs, y,    cr, 0, Math.PI*2); ctx.fill(); }
+                if (!B && !R) { ctx.beginPath(); ctx.arc(x+cs, y+cs, cr, 0, Math.PI*2); ctx.fill(); }
+                if (!B && !L) { ctx.beginPath(); ctx.arc(x,    y+cs, cr, 0, Math.PI*2); ctx.fill(); }
             }
         }
+        ctx.fillStyle = '#111';
     } else {
         for (let r = 0; r < count; r++)
             for (let c = 0; c < count; c++)
