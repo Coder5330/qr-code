@@ -143,7 +143,7 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
 }
 
 // Neighbor-aware module rendering — handles blob merging (rounded) and run-merging (horizontal)
-function drawModules(isDark, count, ox, oy, cs) {
+function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
     ctx.fillStyle = '#111';
     if (selectedShape === 'rounded') {
         const rad = cs * 0.42;
@@ -151,13 +151,13 @@ function drawModules(isDark, count, ox, oy, cs) {
             for (let c = 0; c < count; c++) {
                 if (!isDark(r, c)) continue;
                 const x = ox + c * cs, y = oy + r * cs;
-                if (isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                if (checkFP && isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
                 fillRR(x, y, cs, cs, rad);
                 // bridge to right neighbor to merge blobs
-                if (c + 1 < count && isDark(r, c + 1) && !isFinderPattern(r, c + 1, count))
+                if (c + 1 < count && isDark(r, c + 1) && !(checkFP && isFinderPattern(r, c + 1, count)))
                     ctx.fillRect(x + cs - rad, y, 2 * rad, cs);
                 // bridge to bottom neighbor
-                if (r + 1 < count && isDark(r + 1, c) && !isFinderPattern(r + 1, c, count))
+                if (r + 1 < count && isDark(r + 1, c) && !(checkFP && isFinderPattern(r + 1, c, count)))
                     ctx.fillRect(x, y + cs - rad, cs, 2 * rad);
             }
         }
@@ -167,12 +167,12 @@ function drawModules(isDark, count, ox, oy, cs) {
             let c = 0;
             while (c < count) {
                 if (!isDark(r, c)) { c++; continue; }
-                if (isFinderPattern(r, c, count)) {
+                if (checkFP && isFinderPattern(r, c, count)) {
                     ctx.fillRect(ox + c * cs, oy + r * cs, cs, cs);
                     c++; continue;
                 }
                 let end = c;
-                while (end + 1 < count && isDark(r, end + 1) && !isFinderPattern(r, end + 1, count)) end++;
+                while (end + 1 < count && isDark(r, end + 1) && !(checkFP && isFinderPattern(r, end + 1, count))) end++;
                 const bh = cs * 0.55;
                 fillRR(ox + c * cs, oy + r * cs + (cs - bh) / 2, (end - c + 1) * cs, bh, bh / 2);
                 c = end + 1;
@@ -185,7 +185,7 @@ function drawModules(isDark, count, ox, oy, cs) {
             for (let c = 0; c < count; c++) {
                 if (!isDark(r, c)) continue;
                 const x = ox + c * cs, y = oy + r * cs;
-                if (isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                if (checkFP && isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
                 const L = nd(r, c - 1), R = nd(r, c + 1), T = nd(r - 1, c), B = nd(r + 1, c);
                 const tl = !T && !L, tr = !T && !R, br = !B && !R, bl = !B && !L;
                 ctx.beginPath();
@@ -208,7 +208,7 @@ function drawModules(isDark, count, ox, oy, cs) {
             for (let c = 0; c < count; c++) {
                 if (!isDark(r, c)) continue;
                 const x = ox + c * cs, y = oy + r * cs;
-                if (isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                if (checkFP && isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
                 const L = nd(r, c - 1), R = nd(r, c + 1), T = nd(r - 1, c), B = nd(r + 1, c);
                 ctx.beginPath();
                 if (!L && !R && !T && !B) {
@@ -252,7 +252,7 @@ function drawModules(isDark, count, ox, oy, cs) {
             for (let col = 0; col < count; col++) {
                 if (!isDark(row, col)) continue;
                 const x = ox + col * cs, y = oy + row * cs;
-                if (isFinderPattern(row, col, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                if (checkFP && isFinderPattern(row, col, count)) { ctx.fillRect(x, y, cs, cs); continue; }
                 const L = nd(row, col - 1), R = nd(row, col + 1);
                 const T = nd(row - 1, col), B = nd(row + 1, col);
                 const neighbors = (L?1:0) + (R?1:0) + (T?1:0) + (B?1:0);
@@ -314,7 +314,7 @@ function drawModules(isDark, count, ox, oy, cs) {
     } else {
         for (let r = 0; r < count; r++)
             for (let c = 0; c < count; c++)
-                if (isDark(r, c)) drawModule(ox + c * cs, oy + r * cs, cs, isFinderPattern(r, c, count));
+                if (isDark(r, c)) drawModule(ox + c * cs, oy + r * cs, cs, checkFP && isFinderPattern(r, c, count));
     }
 }
 
@@ -605,26 +605,24 @@ function drawCircleFrame(qr, count, alpha = 1) {
     // How many extra cells fit in the arc bulge beyond QR sides?
     const extraCells = Math.ceil((R * (1 - 1 / Math.SQRT2)) / cell) + 1;
 
-    // Corner decoration: cells inside circle but outside the actual QR data area.
-    // We allow drawing into the quiet-zone border (which is all-white in the real QR)
-    // so there's no visible gap between the random squares and the finder patterns.
+    // Corner decoration: collect all positions first, then render with the chosen shape
+    // (using drawModules so neighbor-aware shapes like arcs/chamfered/jagged work correctly)
     ctx.fillStyle = '#111';
-    for (let row = -extraCells; row < totalCells + extraCells; row++) {
-        for (let col = -extraCells; col < totalCells + extraCells; col++) {
-            // Skip only the true data area (quiet zone is fair game for decoration)
+    const ec = extraCells;
+    const cornerSet = new Set();
+    for (let row = -ec; row < totalCells + ec; row++) {
+        for (let col = -ec; col < totalCells + ec; col++) {
             if (col >= BORDER && col < BORDER + count && row >= BORDER && row < BORDER + count) continue;
-
-            const mx  = qrLeft + col * cell;
-            const my  = qrTop  + row * cell;
-            const mcx = mx + cell / 2;
-            const mcy = my + cell / 2;
-
-            if (Math.hypot(mcx - Cx, mcy - Cy) > R - cell * 0.25) continue;
+            const mx = qrLeft + col * cell;
+            const my = qrTop + row * cell;
+            if (Math.hypot(mx + cell / 2 - Cx, my + cell / 2 - Cy) > R - cell * 0.25) continue;
             if (!isCornerDot(col, row)) continue;
-
-            drawModule(mx, my, cell);
+            cornerSet.add(`${col},${row}`);
         }
     }
+    const cRange = totalCells + 2 * ec;
+    const cIsDark = (r, c) => cornerSet.has(`${c - ec},${r - ec}`);
+    drawModules(cIsDark, cRange, qrLeft - ec * cell, qrTop - ec * cell, cell, false);
 
     // Actual QR modules
     const ox = qrLeft + BORDER * cell;
