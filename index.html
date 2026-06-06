@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>QR Code Generator</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="container">
+            <div class="left">
+                <p class="section-label">1. Enter URL</p>
+                <input id="data" type="text" placeholder="https://">
+                <p class="section-label">2. Choose Style</p>
+                <div class="style-menu-bar">
+                    <button class="menu-button" onclick="toggleMenu('frame')">Frame</button>
+                    <button class="menu-button" onclick="toggleMenu('shape')">Shape</button>
+                    <button class="menu-button" onclick="toggleMenu('logo')">Logo</button>
+                </div>
+
+                <!-- Frame choices -->
+                <div class="style-choices style-frame-choices">
+                    <button class="choice-btn" onclick="selectFrame('none')" data-frame="none">
+                        <div class="choice-icon">✕</div>
+                        <span>None</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectFrame('bottom')" data-frame="bottom">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 28 32" width="28" height="32">
+                                <rect x="1" y="1" width="26" height="24" rx="2" fill="white" stroke="#222" stroke-width="1.5"/>
+                                <rect x="0" y="25" width="28" height="7" rx="1" fill="#111"/>
+                                <text x="14" y="29.5" text-anchor="middle" fill="white" font-size="4" font-weight="bold" font-family="sans-serif">SCAN ME</text>
+                            </svg>
+                        </div>
+                        <span>Bottom</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectFrame('border-bottom')" data-frame="border-bottom">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 28 32" width="28" height="32">
+                                <rect x="1" y="1" width="26" height="24" fill="white" stroke="#111" stroke-width="2.5"/>
+                                <rect x="0" y="25" width="28" height="7" fill="#111"/>
+                                <text x="14" y="29.5" text-anchor="middle" fill="white" font-size="4" font-weight="bold" font-family="sans-serif">SCAN ME</text>
+                            </svg>
+                        </div>
+                        <span>Border</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectFrame('rounded-bottom')" data-frame="rounded-bottom">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 28 32" width="28" height="32">
+                                <rect x="0" y="0" width="28" height="32" rx="6" fill="#111"/>
+                                <rect x="3" y="3" width="22" height="22" rx="2" fill="white"/>
+                                <text x="14" y="29" text-anchor="middle" fill="white" font-size="4" font-weight="bold" font-family="sans-serif">SCAN ME</text>
+                            </svg>
+                        </div>
+                        <span>Rounded</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectFrame('top-banner')" data-frame="top-banner">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 28 32" width="28" height="32">
+                                <rect x="1" y="8" width="26" height="23" rx="2" fill="white" stroke="#222" stroke-width="1.5"/>
+                                <rect x="0" y="0" width="28" height="8" rx="1" fill="#111"/>
+                                <text x="14" y="5.5" text-anchor="middle" fill="white" font-size="4" font-weight="bold" font-family="sans-serif">SCAN ME</text>
+                            </svg>
+                        </div>
+                        <span>Top Bar</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectFrame('circle')" data-frame="circle">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 28 32" width="28" height="32">
+                                <clipPath id="circ"><circle cx="14" cy="13" r="12"/></clipPath>
+                                <rect x="2" y="1" width="24" height="24" fill="#eee" clip-path="url(#circ)"/>
+                                <circle cx="14" cy="13" r="12" fill="none" stroke="#222" stroke-width="1.5"/>
+                                <text x="14" y="30" text-anchor="middle" fill="#111" font-size="4" font-weight="bold" font-family="sans-serif">SCAN ME</text>
+                            </svg>
+                        </div>
+                        <span>Circle</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectFrame('phone')" data-frame="phone">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 20 32" width="20" height="32">
+                                <rect x="0" y="0" width="20" height="32" rx="4" fill="#111"/>
+                                <rect x="2.5" y="5" width="15" height="21" rx="1" fill="white"/>
+                                <circle cx="10" cy="2.5" r="1.2" fill="#555"/>
+                                <circle cx="10" cy="29.5" r="1.8" fill="#444"/>
+                                <text x="10" y="30.8" text-anchor="middle" fill="white" font-size="2.5" font-weight="bold" font-family="sans-serif"></text>
+                            </svg>
+                        </div>
+                        <span>Phone</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectFrame('clipboard')" data-frame="clipboard">
+                        <div class="choice-icon">
+                            <svg viewBox="0 0 26 32" width="26" height="32">
+                                <rect x="0" y="5" width="26" height="27" rx="3" fill="white" stroke="#111" stroke-width="2"/>
+                                <rect x="8" y="0" width="10" height="8" rx="2" fill="#111"/>
+                                <rect x="10" y="1.5" width="6" height="4" rx="1" fill="white"/>
+                                <rect x="0" y="25" width="26" height="7" rx="1" fill="#111"/>
+                                <text x="13" y="29.5" text-anchor="middle" fill="white" font-size="3.5" font-weight="bold" font-family="sans-serif">SCAN ME</text>
+                            </svg>
+                        </div>
+                        <span>Clipboard</span>
+                    </button>
+                </div>
+
+                <!-- Shape choices -->
+                <div class="style-choices style-shape-choices">
+                    <button class="choice-btn" onclick="selectShape('default')" data-shape="default">
+                        <div class="choice-icon"><div class="dot-grid default-grid"></div></div>
+                        <span>Default</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectShape('square')" data-shape="square">
+                        <div class="choice-icon"><div class="dot-grid square-grid"></div></div>
+                        <span>Square</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectShape('rounded')" data-shape="rounded">
+                        <div class="choice-icon"><div class="dot-grid rounded-grid"></div></div>
+                        <span>Rounded</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectShape('dot')" data-shape="dot">
+                        <div class="choice-icon"><div class="dot-grid dot-grid-cls"></div></div>
+                        <span>Dots</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectShape('diamond')" data-shape="diamond">
+                        <div class="choice-icon"><div class="dot-grid diamond-grid"></div></div>
+                        <span>Diamond</span>
+                    </button>
+                </div>
+
+                <!-- Logo choices -->
+                <div class="style-choices style-logo-choices">
+                    <button class="choice-btn" onclick="selectLogo('none')" data-logo="none">
+                        <div class="choice-icon">✕</div>
+                        <span>None</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectLogo('heart')" data-logo="heart">
+                        <div class="choice-icon">❤️</div>
+                        <span>Heart</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectLogo('star')" data-logo="star">
+                        <div class="choice-icon">⭐</div>
+                        <span>Star</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectLogo('smile')" data-logo="smile">
+                        <div class="choice-icon">😊</div>
+                        <span>Smile</span>
+                    </button>
+                    <button class="choice-btn" onclick="selectLogo('camera')" data-logo="camera">
+                        <div class="choice-icon">📷</div>
+                        <span>Camera</span>
+                    </button>
+                    <button class="choice-btn upload-btn" onclick="document.getElementById('logoUpload').click()">
+                        <div class="choice-icon">📁</div>
+                        <span>Upload</span>
+                        <input type="file" id="logoUpload" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
+                    </button>
+                </div>
+            </div>
+
+            <div class="right">
+                <p class="section-label">3. Download</p>
+                <canvas id="qr"></canvas>
+                <p id="error"></p>
+                <button id="download" class="download-button" onclick="downloadQR()">Download</button>
+                <button id="copy" class="download-button secondary" onclick="copyQR()">Copy to Clipboard</button>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+        <script src="script.js?v=7"></script>
+    </body>
+</html>

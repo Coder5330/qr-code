@@ -1,0 +1,287 @@
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.10);
+    overflow: hidden;
+    min-height: 560px;
+}
+
+.left {
+    width: 340px;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border-right: 1px solid #e8eaed;
+    background: #fff;
+}
+
+.right {
+    width: 360px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    background: #fafbfc;
+}
+
+.section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin: 0;
+}
+
+input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    border: 1.5px solid #e2e5ea;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    color: #111;
+}
+
+input:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+}
+
+/* ── Tab bar ── */
+.style-menu-bar {
+    display: flex;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 4px;
+    gap: 2px;
+}
+
+.menu-button {
+    flex: 1;
+    padding: 7px 10px;
+    border-radius: 7px;
+    border: none;
+    background: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.menu-button:hover { color: #374151; }
+
+.menu-button.active {
+    background: #fff;
+    color: #10b981;
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+}
+
+/* ── Choice panels ── */
+.style-choices {
+    display: none;
+    border-radius: 10px;
+    padding: 10px;
+    background: #f9fafb;
+    border: 1.5px solid #e8eaed;
+}
+
+.style-choices.active {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ── Choice buttons ── */
+.choice-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 4px 6px;
+    width: 64px;
+    border-radius: 8px;
+    border: 1.5px solid #e2e5ea;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.choice-btn:hover {
+    border-color: #10b981;
+    background: #f0fdf8;
+}
+
+.choice-btn.selected {
+    border-color: #10b981;
+    background: #ecfdf5;
+    color: #059669;
+    font-weight: 600;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.18);
+}
+
+.choice-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #374151;
+}
+
+/* ── Shape dot-grid previews ── */
+.dot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 8px);
+    grid-template-rows: repeat(3, 8px);
+}
+
+/* Default: no gap, solid squares */
+.default-grid { gap: 0; }
+.default-grid::before,
+.default-grid::after { content: none; }
+
+/* We'll use box-shadow trick: one pseudo element = one dot.
+   But grids can't have 9 cells with one element.
+   Use background-image with 9 gradients instead. */
+
+.default-grid {
+    width: 28px; height: 28px;
+    background:
+        linear-gradient(#111 0 0) 0 0 / 8px 8px no-repeat,
+        linear-gradient(#111 0 0) 10px 0 / 8px 8px no-repeat,
+        linear-gradient(#111 0 0) 20px 0 / 8px 8px no-repeat,
+        linear-gradient(#111 0 0) 0 10px / 8px 8px no-repeat,
+        linear-gradient(#111 0 0) 10px 10px / 8px 8px no-repeat,
+        linear-gradient(#111 0 0) 20px 10px / 8px 8px no-repeat,
+        linear-gradient(#111 0 0) 0 20px / 8px 8px no-repeat,
+        linear-gradient(#111 0 0) 10px 20px / 8px 8px no-repeat,
+        linear-gradient(#111 0 0) 20px 20px / 8px 8px no-repeat;
+}
+
+/* Square: 6px squares with 2px gap */
+.square-grid {
+    width: 28px; height: 28px;
+    background:
+        linear-gradient(#111 0 0) 1px 1px / 6px 6px no-repeat,
+        linear-gradient(#111 0 0) 11px 1px / 6px 6px no-repeat,
+        linear-gradient(#111 0 0) 21px 1px / 6px 6px no-repeat,
+        linear-gradient(#111 0 0) 1px 11px / 6px 6px no-repeat,
+        linear-gradient(#111 0 0) 11px 11px / 6px 6px no-repeat,
+        linear-gradient(#111 0 0) 21px 11px / 6px 6px no-repeat,
+        linear-gradient(#111 0 0) 1px 21px / 6px 6px no-repeat,
+        linear-gradient(#111 0 0) 11px 21px / 6px 6px no-repeat,
+        linear-gradient(#111 0 0) 21px 21px / 6px 6px no-repeat;
+}
+
+/* Rounded: use radial-gradient to fake rounded squares */
+.rounded-grid {
+    width: 28px; height: 28px;
+    background:
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 1px 1px / 6px 6px no-repeat,
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 11px 1px / 6px 6px no-repeat,
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 21px 1px / 6px 6px no-repeat,
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 1px 11px / 6px 6px no-repeat,
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 11px 11px / 6px 6px no-repeat,
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 21px 11px / 6px 6px no-repeat,
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 1px 21px / 6px 6px no-repeat,
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 11px 21px / 6px 6px no-repeat,
+        radial-gradient(2px 2px at 4px 4px, #111 97%, transparent) 21px 21px / 6px 6px no-repeat;
+}
+
+/* Dots: circles */
+.dot-grid-cls {
+    width: 28px; height: 28px;
+    background:
+        radial-gradient(circle, #111 47%, transparent 48%) 1px 1px / 8px 8px no-repeat,
+        radial-gradient(circle, #111 47%, transparent 48%) 11px 1px / 8px 8px no-repeat,
+        radial-gradient(circle, #111 47%, transparent 48%) 21px 1px / 8px 8px no-repeat,
+        radial-gradient(circle, #111 47%, transparent 48%) 1px 11px / 8px 8px no-repeat,
+        radial-gradient(circle, #111 47%, transparent 48%) 11px 11px / 8px 8px no-repeat,
+        radial-gradient(circle, #111 47%, transparent 48%) 21px 11px / 8px 8px no-repeat,
+        radial-gradient(circle, #111 47%, transparent 48%) 1px 21px / 8px 8px no-repeat,
+        radial-gradient(circle, #111 47%, transparent 48%) 11px 21px / 8px 8px no-repeat,
+        radial-gradient(circle, #111 47%, transparent 48%) 21px 21px / 8px 8px no-repeat;
+}
+
+/* Diamond: rotated squares using CSS */
+.diamond-grid {
+    width: 28px; height: 28px;
+    background:
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 1px 1px / 8px 8px no-repeat,
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 11px 1px / 8px 8px no-repeat,
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 21px 1px / 8px 8px no-repeat,
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 1px 11px / 8px 8px no-repeat,
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 11px 11px / 8px 8px no-repeat,
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 21px 11px / 8px 8px no-repeat,
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 1px 21px / 8px 8px no-repeat,
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 11px 21px / 8px 8px no-repeat,
+        linear-gradient(45deg, transparent 25%, #111 25%, #111 75%, transparent 75%) 21px 21px / 8px 8px no-repeat;
+}
+
+/* ── Download / copy buttons ── */
+.download-button {
+    width: 100%;
+    height: 42px;
+    border-radius: 8px;
+    border: none;
+    background: #10b981;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.download-button:hover { background: #059669; transform: translateY(-1px); }
+.download-button:active { transform: translateY(0); }
+.download-button:disabled { background: #a7f3d0; cursor: not-allowed; transform: none; }
+
+.download-button.secondary {
+    background: #fff;
+    color: #10b981;
+    border: 1.5px solid #a7f3d0;
+}
+
+.download-button.secondary:hover { background: #ecfdf5; }
+.download-button.secondary:disabled { background: #f9fafb; color: #6ee7b7; border-color: #d1fae5; }
+
+canvas {
+    background: #fff;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.10);
+    border-radius: 10px;
+    max-width: 100%;
+}
+
+#error {
+    color: #ef4444;
+    font-size: 13px;
+    width: 100%;
+    text-align: center;
+    min-height: 18px;
+    margin: 0;
+}
