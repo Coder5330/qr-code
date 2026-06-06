@@ -245,30 +245,15 @@ function drawModules(isDark, count, ox, oy, cs) {
             }
         }
     } else if (selectedShape === 'arcs') {
-        const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
-        const cr = cs * 0.38;
-
-        // Pass 1: solid black squares for every dark module
-        for (let row = 0; row < count; row++)
-            for (let col = 0; col < count; col++)
-                if (isDark(row, col)) ctx.fillRect(ox + col * cs, oy + row * cs, cs, cs);
-
-        // Pass 2: white circles punch exposed outer corners — no path math needed
-        ctx.fillStyle = '#fff';
+        const r = cs * 0.35;
         for (let row = 0; row < count; row++) {
             for (let col = 0; col < count; col++) {
                 if (!isDark(row, col)) continue;
-                if (isFinderPattern(row, col, count)) continue;
                 const x = ox + col * cs, y = oy + row * cs;
-                const L = nd(row, col-1), R = nd(row, col+1);
-                const T = nd(row-1, col), B = nd(row+1, col);
-                if (!T && !L) { ctx.beginPath(); ctx.arc(x,    y,    cr, 0, Math.PI*2); ctx.fill(); }
-                if (!T && !R) { ctx.beginPath(); ctx.arc(x+cs, y,    cr, 0, Math.PI*2); ctx.fill(); }
-                if (!B && !R) { ctx.beginPath(); ctx.arc(x+cs, y+cs, cr, 0, Math.PI*2); ctx.fill(); }
-                if (!B && !L) { ctx.beginPath(); ctx.arc(x,    y+cs, cr, 0, Math.PI*2); ctx.fill(); }
+                if (isFinderPattern(row, col, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                fillRR(x, y, cs, cs, r);
             }
         }
-        ctx.fillStyle = '#111';
     } else {
         for (let r = 0; r < count; r++)
             for (let c = 0; c < count; c++)
