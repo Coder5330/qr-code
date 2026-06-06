@@ -204,39 +204,55 @@ function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
         }
     } else if (selectedShape === 'jagged') {
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
+        const pillCells = new Set();
+
+        // First pass: find horizontal runs where both ends are single-connection → draw as pill
+        for (let r = 0; r < count; r++) {
+            let c = 0;
+            while (c < count) {
+                if (!isDark(r, c) || (checkFP && isFinderPattern(r, c, count))) { c++; continue; }
+                let end = c;
+                while (end + 1 < count && isDark(r, end + 1) && !(checkFP && isFinderPattern(r, end + 1, count))) end++;
+                const runLen = end - c + 1;
+                // Both ends must have exactly 1 connection (only horizontal, no T/B)
+                const leftFree  = !nd(r, c - 1)   && !nd(r - 1, c)   && !nd(r + 1, c);
+                const rightFree = !nd(r, end + 1)  && !nd(r - 1, end) && !nd(r + 1, end);
+                if (runLen >= 2 && leftFree && rightFree) {
+                    const x = ox + c * cs, y = oy + r * cs, W = runLen * cs;
+                    ctx.beginPath();
+                    ctx.moveTo(x,          y + cs / 2); // left tip
+                    ctx.lineTo(x + cs,     y);           // top-left corner of rect
+                    ctx.lineTo(x + W - cs, y);           // top-right corner of rect
+                    ctx.lineTo(x + W,      y + cs / 2); // right tip
+                    ctx.lineTo(x + W - cs, y + cs);     // bottom-right corner
+                    ctx.lineTo(x + cs,     y + cs);     // bottom-left corner
+                    ctx.closePath();
+                    ctx.fill();
+                    for (let i = c; i <= end; i++) pillCells.add(r * count + i);
+                }
+                c = end + 1;
+            }
+        }
+
+        // Second pass: draw remaining cells individually
         for (let r = 0; r < count; r++) {
             for (let c = 0; c < count; c++) {
-                if (!isDark(r, c)) continue;
+                if (!isDark(r, c) || pillCells.has(r * count + c)) continue;
                 const x = ox + c * cs, y = oy + r * cs;
                 if (checkFP && isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
                 const L = nd(r, c - 1), R = nd(r, c + 1), T = nd(r - 1, c), B = nd(r + 1, c);
                 ctx.beginPath();
                 if (!L && !R && !T && !B) {
-                    // isolated: diamond
-                    ctx.moveTo(x + cs / 2, y);
-                    ctx.lineTo(x + cs, y + cs / 2);
-                    ctx.lineTo(x + cs / 2, y + cs);
-                    ctx.lineTo(x, y + cs / 2);
+                    ctx.moveTo(x + cs / 2, y); ctx.lineTo(x + cs, y + cs / 2);
+                    ctx.lineTo(x + cs / 2, y + cs); ctx.lineTo(x, y + cs / 2);
                 } else if (R && !L && !T && !B) {
-                    // horizontal run start: point right ▶
-                    ctx.moveTo(x, y);
-                    ctx.lineTo(x + cs, y + cs / 2);
-                    ctx.lineTo(x, y + cs);
+                    ctx.moveTo(x, y); ctx.lineTo(x + cs, y + cs / 2); ctx.lineTo(x, y + cs);
                 } else if (L && !R && !T && !B) {
-                    // horizontal run end: point left ◀
-                    ctx.moveTo(x, y + cs / 2);
-                    ctx.lineTo(x + cs, y);
-                    ctx.lineTo(x + cs, y + cs);
+                    ctx.moveTo(x, y + cs / 2); ctx.lineTo(x + cs, y); ctx.lineTo(x + cs, y + cs);
                 } else if (B && !T && !L && !R) {
-                    // vertical run start: point down ▼
-                    ctx.moveTo(x, y);
-                    ctx.lineTo(x + cs, y);
-                    ctx.lineTo(x + cs / 2, y + cs);
+                    ctx.moveTo(x, y); ctx.lineTo(x + cs, y); ctx.lineTo(x + cs / 2, y + cs);
                 } else if (T && !B && !L && !R) {
-                    // vertical run end: point up ▲
-                    ctx.moveTo(x + cs / 2, y);
-                    ctx.lineTo(x + cs, y + cs);
-                    ctx.lineTo(x, y + cs);
+                    ctx.moveTo(x + cs / 2, y); ctx.lineTo(x + cs, y + cs); ctx.lineTo(x, y + cs);
                 } else {
                     ctx.rect(x, y, cs, cs);
                 }
