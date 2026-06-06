@@ -98,24 +98,30 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
     const s = cellSize - pad * 2;
     const px = x + pad, py = y + pad;
 
-    if (selectedShape === 'square') {
-        ctx.fillRect(px, py, s, s);
-    } else if (selectedShape === 'rounded') {
-        fillRR(px, py, s, s, s * 0.32);
+    if (selectedShape === 'rounded') {
+        // full-size blob; drawModules adds connectors between adjacent dark cells
+        fillRR(x, y, cellSize, cellSize, cellSize * 0.42);
+    } else if (selectedShape === 'horizontal') {
+        // fallback single-cell bar (drawModules handles run-merging)
+        const bh = cellSize * 0.55;
+        fillRR(x, y + (cellSize - bh) / 2, cellSize, bh, bh / 2);
+    } else if (selectedShape === 'chamfered') {
+        const cl = s * 0.28;
+        ctx.beginPath();
+        ctx.moveTo(px + cl, py);
+        ctx.lineTo(px + s - cl, py);
+        ctx.lineTo(px + s, py + cl);
+        ctx.lineTo(px + s, py + s - cl);
+        ctx.lineTo(px + s - cl, py + s);
+        ctx.lineTo(px + cl, py + s);
+        ctx.lineTo(px, py + s - cl);
+        ctx.lineTo(px, py + cl);
+        ctx.closePath();
+        ctx.fill();
     } else if (selectedShape === 'dot') {
         ctx.beginPath();
         ctx.arc(px + s / 2, py + s / 2, s / 2, 0, Math.PI * 2);
         ctx.fill();
-    } else if (selectedShape === 'diamond') {
-        ctx.save();
-        ctx.translate(px + s / 2, py + s / 2);
-        ctx.rotate(Math.PI / 4);
-        const ds = s * 0.72;
-        ctx.fillRect(-ds / 2, -ds / 2, ds, ds);
-        ctx.restore();
-    } else if (selectedShape === 'horizontal') {
-        const bh = cellSize * 0.5;
-        ctx.fillRect(x, y + (cellSize - bh) / 2, cellSize, bh);
     } else if (selectedShape === 'cross') {
         const arm = s * 0.38;
         ctx.fillRect(px, py + (s - arm) / 2, s, arm);
@@ -133,10 +139,53 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
         ctx.fill();
     } else if (selectedShape === 'corners') {
         const cs = s * 0.44;
-        ctx.fillRect(px,         py,         cs, cs);
-        ctx.fillRect(px + s - cs, py,         cs, cs);
-        ctx.fillRect(px,         py + s - cs, cs, cs);
+        ctx.fillRect(px,          py,          cs, cs);
+        ctx.fillRect(px + s - cs, py,          cs, cs);
+        ctx.fillRect(px,          py + s - cs, cs, cs);
         ctx.fillRect(px + s - cs, py + s - cs, cs, cs);
+    }
+}
+
+// Neighbor-aware module rendering — handles blob merging (rounded) and run-merging (horizontal)
+function drawModules(isDark, count, ox, oy, cs) {
+    ctx.fillStyle = '#111';
+    if (selectedShape === 'rounded') {
+        const rad = cs * 0.42;
+        for (let r = 0; r < count; r++) {
+            for (let c = 0; c < count; c++) {
+                if (!isDark(r, c)) continue;
+                const x = ox + c * cs, y = oy + r * cs;
+                if (isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                fillRR(x, y, cs, cs, rad);
+                // bridge to right neighbor to merge blobs
+                if (c + 1 < count && isDark(r, c + 1) && !isFinderPattern(r, c + 1, count))
+                    ctx.fillRect(x + cs - rad, y, 2 * rad, cs);
+                // bridge to bottom neighbor
+                if (r + 1 < count && isDark(r + 1, c) && !isFinderPattern(r + 1, c, count))
+                    ctx.fillRect(x, y + cs - rad, cs, 2 * rad);
+            }
+        }
+    } else if (selectedShape === 'horizontal') {
+        // merge consecutive dark cells in each row into a single pill
+        for (let r = 0; r < count; r++) {
+            let c = 0;
+            while (c < count) {
+                if (!isDark(r, c)) { c++; continue; }
+                if (isFinderPattern(r, c, count)) {
+                    ctx.fillRect(ox + c * cs, oy + r * cs, cs, cs);
+                    c++; continue;
+                }
+                let end = c;
+                while (end + 1 < count && isDark(r, end + 1) && !isFinderPattern(r, end + 1, count)) end++;
+                const bh = cs * 0.55;
+                fillRR(ox + c * cs, oy + r * cs + (cs - bh) / 2, (end - c + 1) * cs, bh, bh / 2);
+                c = end + 1;
+            }
+        }
+    } else {
+        for (let r = 0; r < count; r++)
+            for (let c = 0; c < count; c++)
+                if (isDark(r, c)) drawModule(ox + c * cs, oy + r * cs, cs, isFinderPattern(r, c, count));
     }
 }
 
@@ -334,10 +383,7 @@ function renderMatrix(isDark, count, alpha = 1) {
     drawFrameBack(W, H, qrSide, fp, ft, fb);
     const ox = fp + BORDER * CELL;
     const oy = fp + BORDER * CELL + ft;
-    ctx.fillStyle = '#111';
-    for (let r = 0; r < count; r++)
-        for (let c = 0; c < count; c++)
-            if (isDark(r, c)) drawModule(ox + c * CELL, oy + r * CELL, CELL, isFinderPattern(r, c, count));
+    drawModules(isDark, count, ox, oy, CELL);
     drawFrameText(W, H, ft, fb);
     if (selectedLogo !== 'none') drawLogo(ox, oy, count);
     ctx.globalAlpha = 1;
@@ -454,12 +500,7 @@ function drawCircleFrame(qr, count, alpha = 1) {
     // Actual QR modules
     const ox = qrLeft + BORDER * cell;
     const oy = qrTop  + BORDER * cell;
-    ctx.fillStyle = '#111';
-    for (let r = 0; r < count; r++) {
-        for (let c = 0; c < count; c++) {
-            if (qr.isDark(r, c)) drawModule(ox + c * cell, oy + r * cell, cell, isFinderPattern(r, c, count));
-        }
-    }
+    drawModules((r, c) => qr.isDark(r, c), count, ox, oy, cell);
 
     ctx.restore();
 
