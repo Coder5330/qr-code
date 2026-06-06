@@ -245,27 +245,54 @@ function drawModules(isDark, count, ox, oy, cs) {
             }
         }
     } else if (selectedShape === 'arcs') {
+        // Outward-rounding pipe style: outer corners get convex arcs,
+        // inner L-junctions get a wedge fill to bridge the concave notch.
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
-        const ra = cs * 0.5;
-        for (let r = 0; r < count; r++) {
-            for (let c = 0; c < count; c++) {
-                if (!isDark(r, c)) continue;
-                const x = ox + c * cs, y = oy + r * cs;
-                if (isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
-                const L = nd(r, c - 1), R = nd(r, c + 1), T = nd(r - 1, c), B = nd(r + 1, c);
+        const ar = cs * 0.45;
+        for (let row = 0; row < count; row++) {
+            for (let col = 0; col < count; col++) {
+                if (!isDark(row, col)) continue;
+                const x = ox + col * cs, y = oy + row * cs;
+                if (isFinderPattern(row, col, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                const L = nd(row, col - 1), R = nd(row, col + 1);
+                const T = nd(row - 1, col), B = nd(row + 1, col);
                 const tl = !T && !L, tr = !T && !R, br = !B && !R, bl = !B && !L;
+
+                // Cell body with convex outer-corner arcs
                 ctx.beginPath();
-                ctx.moveTo(tl ? x + ra : x, y);
-                ctx.lineTo(tr ? x + cs - ra : x + cs, y);
-                if (tr) ctx.arc(x + cs, y, ra, Math.PI, Math.PI / 2, true);
-                ctx.lineTo(x + cs, br ? y + cs - ra : y + cs);
-                if (br) ctx.arc(x + cs, y + cs, ra, 3 * Math.PI / 2, Math.PI, true);
-                ctx.lineTo(bl ? x + ra : x, y + cs);
-                if (bl) ctx.arc(x, y + cs, ra, 0, 3 * Math.PI / 2, true);
-                ctx.lineTo(x, tl ? y + ra : y);
-                if (tl) ctx.arc(x, y, ra, Math.PI / 2, 0, true);
+                ctx.moveTo(tl ? x + ar : x, y);
+                ctx.lineTo(tr ? x + cs - ar : x + cs, y);
+                if (tr) ctx.arc(x + cs - ar, y + ar, ar, 3 * Math.PI / 2, 0, false);
+                ctx.lineTo(x + cs, br ? y + cs - ar : y + cs);
+                if (br) ctx.arc(x + cs - ar, y + cs - ar, ar, 0, Math.PI / 2, false);
+                ctx.lineTo(bl ? x + ar : x, y + cs);
+                if (bl) ctx.arc(x + ar, y + cs - ar, ar, Math.PI / 2, Math.PI, false);
+                ctx.lineTo(x, tl ? y + ar : y);
+                if (tl) ctx.arc(x + ar, y + ar, ar, Math.PI, 3 * Math.PI / 2, false);
                 ctx.closePath();
                 ctx.fill();
+
+                // Fill 270° inner-corner notches at L-junctions
+                if (T && L) {
+                    ctx.beginPath(); ctx.moveTo(x, y);
+                    ctx.arc(x, y, ar, Math.PI, 3 * Math.PI / 2, false);
+                    ctx.closePath(); ctx.fill();
+                }
+                if (T && R) {
+                    ctx.beginPath(); ctx.moveTo(x + cs, y);
+                    ctx.arc(x + cs, y, ar, 3 * Math.PI / 2, 0, false);
+                    ctx.closePath(); ctx.fill();
+                }
+                if (B && R) {
+                    ctx.beginPath(); ctx.moveTo(x + cs, y + cs);
+                    ctx.arc(x + cs, y + cs, ar, 0, Math.PI / 2, false);
+                    ctx.closePath(); ctx.fill();
+                }
+                if (B && L) {
+                    ctx.beginPath(); ctx.moveTo(x, y + cs);
+                    ctx.arc(x, y + cs, ar, Math.PI / 2, Math.PI, false);
+                    ctx.closePath(); ctx.fill();
+                }
             }
         }
     } else {
