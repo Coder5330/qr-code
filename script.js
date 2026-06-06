@@ -245,15 +245,42 @@ function drawModules(isDark, count, ox, oy, cs) {
             }
         }
     } else if (selectedShape === 'arcs') {
-        const r = cs * 0.35;
-        for (let row = 0; row < count; row++) {
-            for (let col = 0; col < count; col++) {
-                if (!isDark(row, col)) continue;
-                const x = ox + col * cs, y = oy + row * cs;
-                if (isFinderPattern(row, col, count)) { ctx.fillRect(x, y, cs, cs); continue; }
-                fillRR(x, y, cs, cs, r);
+        // Subtractive layering — no path merging, no neighbor math:
+        // 1) Solid black squares everywhere
+        // 2) White square punches one corner per cell
+        // 3) Black quarter-circle arc restores the rounded portion
+        // Finder patterns are left completely untouched.
+        const ar = cs * 0.5;
+
+        // Pass 1: solid black squares
+        for (let r = 0; r < count; r++)
+            for (let c = 0; c < count; c++)
+                if (isDark(r, c)) ctx.fillRect(ox + c * cs, oy + r * cs, cs, cs);
+
+        // Passes 2+3: per non-finder cell, punch white then restore arc
+        for (let r = 0; r < count; r++) {
+            for (let c = 0; c < count; c++) {
+                if (!isDark(r, c) || isFinderPattern(r, c, count)) continue;
+                const x = ox + c * cs, y = oy + r * cs;
+                const corner = (c + r) % 4; // rotate corner: 0=TL 1=TR 2=BR 3=BL
+
+                ctx.fillStyle = '#fff';
+                if      (corner === 0) ctx.fillRect(x,       y,       ar, ar);
+                else if (corner === 1) ctx.fillRect(x+cs-ar, y,       ar, ar);
+                else if (corner === 2) ctx.fillRect(x+cs-ar, y+cs-ar, ar, ar);
+                else                   ctx.fillRect(x,       y+cs-ar, ar, ar);
+
+                ctx.fillStyle = '#111';
+                ctx.beginPath();
+                if      (corner === 0) { ctx.moveTo(x,    y);    ctx.arc(x,    y,    ar, 0,           Math.PI/2,   false); }
+                else if (corner === 1) { ctx.moveTo(x+cs, y);    ctx.arc(x+cs, y,    ar, Math.PI/2,   Math.PI,     false); }
+                else if (corner === 2) { ctx.moveTo(x+cs, y+cs); ctx.arc(x+cs, y+cs, ar, Math.PI,     3*Math.PI/2, false); }
+                else                   { ctx.moveTo(x,    y+cs); ctx.arc(x,    y+cs, ar, 3*Math.PI/2, 2*Math.PI,   false); }
+                ctx.closePath();
+                ctx.fill();
             }
         }
+        ctx.fillStyle = '#111';
     } else {
         for (let r = 0; r < count; r++)
             for (let c = 0; c < count; c++)
