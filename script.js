@@ -138,15 +138,28 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
         }
         ctx.closePath();
         ctx.fill();
-    } else if (selectedShape === 'star') {
-        const scx = px + s / 2, scy = py + s / 2;
-        const h = s / 2, t = h * 0.25;
+    } else if (selectedShape === 'wavy') {
+        const col = Math.round(x / cellSize);
+        const row = Math.round(y / cellSize);
+        let wh = (Math.imul(col + 73, 0x9e3779b9) ^ Math.imul(row + 37, 0x517cc1b7)) >>> 0;
+        const rng = () => {
+            wh = Math.imul(wh ^ (wh >>> 16), 0x85ebca6b) >>> 0;
+            wh = Math.imul(wh ^ (wh >>> 13), 0xc2b2ae35) >>> 0;
+            wh ^= wh >>> 16;
+            return (wh >>> 0) / 0x100000000;
+        };
+        const amp = s * 0.32;
+        // one wavy control point per edge; bottom biased to droop (melting)
+        const ct = (rng() - 0.5) * amp;
+        const cr = (rng() - 0.5) * amp;
+        const cb = (rng() - 0.3) * amp;
+        const cl = (rng() - 0.5) * amp;
         ctx.beginPath();
-        ctx.moveTo(scx, scy - h);
-        ctx.quadraticCurveTo(scx - t, scy - t, scx - h, scy);
-        ctx.quadraticCurveTo(scx - t, scy + t, scx, scy + h);
-        ctx.quadraticCurveTo(scx + t, scy + t, scx + h, scy);
-        ctx.quadraticCurveTo(scx + t, scy - t, scx, scy - h);
+        ctx.moveTo(px, py);
+        ctx.quadraticCurveTo(px + s / 2, py + ct,       px + s, py);
+        ctx.quadraticCurveTo(px + s + cr, py + s / 2,   px + s, py + s);
+        ctx.quadraticCurveTo(px + s / 2, py + s + cb,   px,     py + s);
+        ctx.quadraticCurveTo(px + cl,    py + s / 2,    px,     py);
         ctx.closePath();
         ctx.fill();
     } else if (selectedShape === 'corners') {

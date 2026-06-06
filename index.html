@@ -158,22 +158,21 @@
                         </div>
                         <span>Jagged</span>
                     </button>
-                    <button class="choice-btn" onclick="selectShape('star')" data-shape="star">
+                    <button class="choice-btn" onclick="selectShape('wavy')" data-shape="wavy">
                         <div class="choice-icon">
                             <svg viewBox="0 0 28 28" width="28" height="28">
-                                <defs><path id="sp" d="M0,-4 Q-1,-1 -4,0 Q-1,1 0,4 Q1,1 4,0 Q1,-1 0,-4Z"/></defs>
-                                <use href="#sp" transform="translate(5,5)" fill="#111"/>
-                                <use href="#sp" transform="translate(14,5)" fill="#111"/>
-                                <use href="#sp" transform="translate(23,5)" fill="#111"/>
-                                <use href="#sp" transform="translate(5,14)" fill="#111"/>
-                                <use href="#sp" transform="translate(14,14)" fill="#111"/>
-                                <use href="#sp" transform="translate(23,14)" fill="#111"/>
-                                <use href="#sp" transform="translate(5,23)" fill="#111"/>
-                                <use href="#sp" transform="translate(14,23)" fill="#111"/>
-                                <use href="#sp" transform="translate(23,23)" fill="#111"/>
+                                <ellipse cx="5"  cy="5"  rx="4.5" ry="3.5" fill="#111"/>
+                                <ellipse cx="14" cy="4"  rx="3.5" ry="4.5" fill="#111"/>
+                                <ellipse cx="23" cy="5"  rx="4"   ry="3"   fill="#111"/>
+                                <ellipse cx="4"  cy="14" rx="3"   ry="4"   fill="#111"/>
+                                <ellipse cx="14" cy="14" rx="4.5" ry="3.5" fill="#111"/>
+                                <ellipse cx="23" cy="13" rx="3.5" ry="4.5" fill="#111"/>
+                                <ellipse cx="5"  cy="23" rx="4"   ry="3.5" fill="#111"/>
+                                <ellipse cx="14" cy="24" rx="3.5" ry="3"   fill="#111"/>
+                                <ellipse cx="23" cy="23" rx="4"   ry="4.5" fill="#111"/>
                             </svg>
                         </div>
-                        <span>Star</span>
+                        <span>Wavy</span>
                     </button>
                     <button class="choice-btn" onclick="selectShape('corners')" data-shape="corners">
                         <div class="choice-icon">
@@ -238,6 +237,6 @@
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-        <script src="script.js?v=11"></script>
+        <script src="script.js?v=12"></script>
     </body>
 </html>
