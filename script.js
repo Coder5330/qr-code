@@ -248,7 +248,7 @@ function drawModules(isDark, count, ox, oy, cs) {
         // Outward-rounding pipe style: outer corners get convex arcs,
         // inner L-junctions get a wedge fill to bridge the concave notch.
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
-        const ar = cs * 0.45;
+        const ar = cs * 0.32;
         for (let row = 0; row < count; row++) {
             for (let col = 0; col < count; col++) {
                 if (!isDark(row, col)) continue;
