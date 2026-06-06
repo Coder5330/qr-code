@@ -204,69 +204,43 @@ function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
         }
     } else if (selectedShape === 'jagged') {
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
-        const pillCells = new Set();
-
-        // First pass: replace qualifying run-end cells with jagged wedges
-        for (let r = 0; r < count; r++) {
-            let c = 0;
-            while (c < count) {
-                if (!isDark(r, c) || (checkFP && isFinderPattern(r, c, count))) { c++; continue; }
-                let end = c;
-                while (end + 1 < count && isDark(r, end + 1) && !(checkFP && isFinderPattern(r, end + 1, count))) end++;
-                const runLen = end - c + 1;
-                if (runLen >= 2) {
-                    // Each end qualifies independently: no neighbor except the run itself
-                    const leftQual  = !nd(r, c - 1)   && !nd(r - 1, c)   && !nd(r + 1, c);
-                    const rightQual = !nd(r, end + 1)  && !nd(r - 1, end) && !nd(r + 1, end);
-                    if (leftQual) {
-                        // Wedge points left (away from run)
-                        const x = ox + c * cs, y = oy + r * cs;
-                        ctx.beginPath();
-                        ctx.moveTo(x + cs,     y);
-                        ctx.lineTo(x + cs / 2, y);
-                        ctx.lineTo(x,          y + cs / 2);
-                        ctx.lineTo(x + cs / 2, y + cs);
-                        ctx.lineTo(x + cs,     y + cs);
-                        ctx.closePath(); ctx.fill();
-                        pillCells.add(r * count + c);
-                    }
-                    if (rightQual) {
-                        // Wedge points right (away from run)
-                        const x = ox + end * cs, y = oy + r * cs;
-                        ctx.beginPath();
-                        ctx.moveTo(x,          y);
-                        ctx.lineTo(x + cs / 2, y);
-                        ctx.lineTo(x + cs,     y + cs / 2);
-                        ctx.lineTo(x + cs / 2, y + cs);
-                        ctx.lineTo(x,          y + cs);
-                        ctx.closePath(); ctx.fill();
-                        pillCells.add(r * count + end);
-                    }
-                }
-                c = end + 1;
-            }
-        }
-
-        // Second pass: draw remaining cells individually
         for (let r = 0; r < count; r++) {
             for (let c = 0; c < count; c++) {
-                if (!isDark(r, c) || pillCells.has(r * count + c)) continue;
+                if (!isDark(r, c)) continue;
                 const x = ox + c * cs, y = oy + r * cs;
                 if (checkFP && isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
                 const L = nd(r, c - 1), R = nd(r, c + 1), T = nd(r - 1, c), B = nd(r + 1, c);
                 ctx.beginPath();
-                if (!L && !R && !T && !B) {
-                    ctx.moveTo(x + cs / 2, y); ctx.lineTo(x + cs, y + cs / 2);
-                    ctx.lineTo(x + cs / 2, y + cs); ctx.lineTo(x, y + cs / 2);
-                } else if (R && !L && !T && !B) {
-                    ctx.moveTo(x, y); ctx.lineTo(x + cs, y + cs / 2); ctx.lineTo(x, y + cs);
+                if (R && !L && !T && !B) {
+                    // Left dead-end: V-notch on left edge, flat top/right/bottom
+                    ctx.moveTo(x,          y);
+                    ctx.lineTo(x + cs,     y);
+                    ctx.lineTo(x + cs,     y + cs);
+                    ctx.lineTo(x,          y + cs);
+                    ctx.lineTo(x + cs / 2, y + cs / 2);
                 } else if (L && !R && !T && !B) {
-                    ctx.moveTo(x, y + cs / 2); ctx.lineTo(x + cs, y); ctx.lineTo(x + cs, y + cs);
+                    // Right dead-end: V-notch on right edge, flat top/left/bottom
+                    ctx.moveTo(x,          y);
+                    ctx.lineTo(x + cs,     y);
+                    ctx.lineTo(x + cs / 2, y + cs / 2);
+                    ctx.lineTo(x + cs,     y + cs);
+                    ctx.lineTo(x,          y + cs);
                 } else if (B && !T && !L && !R) {
-                    ctx.moveTo(x, y); ctx.lineTo(x + cs, y); ctx.lineTo(x + cs / 2, y + cs);
+                    // Top dead-end: V-notch on top edge, flat sides/bottom
+                    ctx.moveTo(x,          y);
+                    ctx.lineTo(x + cs / 2, y + cs / 2);
+                    ctx.lineTo(x + cs,     y);
+                    ctx.lineTo(x + cs,     y + cs);
+                    ctx.lineTo(x,          y + cs);
                 } else if (T && !B && !L && !R) {
-                    ctx.moveTo(x + cs / 2, y); ctx.lineTo(x + cs, y + cs); ctx.lineTo(x, y + cs);
+                    // Bottom dead-end: V-notch on bottom edge, flat sides/top
+                    ctx.moveTo(x,          y);
+                    ctx.lineTo(x + cs,     y);
+                    ctx.lineTo(x + cs,     y + cs);
+                    ctx.lineTo(x + cs / 2, y + cs / 2);
+                    ctx.lineTo(x,          y + cs);
                 } else {
+                    // Isolated, middle of run, or junction: plain square
                     ctx.rect(x, y, cs, cs);
                 }
                 ctx.closePath();
