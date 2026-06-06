@@ -105,97 +105,38 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
         // fallback single-cell bar (drawModules handles run-merging)
         const bh = cellSize * 0.55;
         fillRR(x, y + (cellSize - bh) / 2, cellSize, bh, bh / 2);
-    } else if (selectedShape === 'chamfered') {
-        const cl = s * 0.28;
-        ctx.beginPath();
-        ctx.moveTo(px + cl, py);
-        ctx.lineTo(px + s - cl, py);
-        ctx.lineTo(px + s, py + cl);
-        ctx.lineTo(px + s, py + s - cl);
-        ctx.lineTo(px + s - cl, py + s);
-        ctx.lineTo(px + cl, py + s);
-        ctx.lineTo(px, py + s - cl);
-        ctx.lineTo(px, py + cl);
-        ctx.closePath();
-        ctx.fill();
     } else if (selectedShape === 'dot') {
         ctx.beginPath();
         ctx.arc(px + s / 2, py + s / 2, s / 2, 0, Math.PI * 2);
         ctx.fill();
-    } else if (selectedShape === 'jagged') {
-        // Alternating right-angled triangles — orientation determined by cell position
-        const col = Math.round(x / cellSize);
-        const row = Math.round(y / cellSize);
-        ctx.beginPath();
-        if ((col + row) % 2 === 0) {
-            ctx.moveTo(px,     py);
-            ctx.lineTo(px + s, py);
-            ctx.lineTo(px,     py + s);
-        } else {
-            ctx.moveTo(px + s, py);
-            ctx.lineTo(px + s, py + s);
-            ctx.lineTo(px,     py + s);
-        }
-        ctx.closePath();
-        ctx.fill();
     } else if (selectedShape === 'wavy') {
-        const col = Math.round(x / cellSize);
-        const row = Math.round(y / cellSize);
-        let wh = (Math.imul(col + 73, 0x9e3779b9) ^ Math.imul(row + 37, 0x517cc1b7)) >>> 0;
-        const rng = () => {
-            wh = Math.imul(wh ^ (wh >>> 16), 0x85ebca6b) >>> 0;
-            wh = Math.imul(wh ^ (wh >>> 13), 0xc2b2ae35) >>> 0;
-            wh ^= wh >>> 16;
-            return (wh >>> 0) / 0x100000000;
-        };
-        const amp = s * 0.32;
-        // one wavy control point per edge; bottom biased to droop (melting)
-        const ct = (rng() - 0.5) * amp;
-        const cr = (rng() - 0.5) * amp;
-        const cb = (rng() - 0.3) * amp;
-        const cl = (rng() - 0.5) * amp;
+        // Sine wave distortion using global pixel coords so adjacent cells share edge formulas
+        const A = cellSize * 0.15;
+        const lam = cellSize * 2.5;
+        const N = 8;
         ctx.beginPath();
-        ctx.moveTo(px, py);
-        ctx.quadraticCurveTo(px + s / 2, py + ct,       px + s, py);
-        ctx.quadraticCurveTo(px + s + cr, py + s / 2,   px + s, py + s);
-        ctx.quadraticCurveTo(px + s / 2, py + s + cb,   px,     py + s);
-        ctx.quadraticCurveTo(px + cl,    py + s / 2,    px,     py);
-        ctx.closePath();
-        ctx.fill();
-    } else if (selectedShape === 'arcs') {
-        const col = Math.round(x / cellSize);
-        const row = Math.round(y / cellSize);
-        const corner = (col + row * 2) % 4;
-        const r = s * 0.65;
-        ctx.beginPath();
-        if (corner === 0) {           // concave arc at top-left
-            ctx.moveTo(px + r, py);
-            ctx.lineTo(px + s, py);
-            ctx.lineTo(px + s, py + s);
-            ctx.lineTo(px,     py + s);
-            ctx.lineTo(px,     py + r);
-            ctx.arc(px, py, r, Math.PI / 2, 0, true);
-        } else if (corner === 1) {    // concave arc at top-right
-            ctx.moveTo(px, py);
-            ctx.lineTo(px + s - r, py);
-            ctx.arc(px + s, py, r, Math.PI, Math.PI / 2, true);
-            ctx.lineTo(px + s, py + s);
-            ctx.lineTo(px,     py + s);
-        } else if (corner === 2) {    // concave arc at bottom-right
-            ctx.moveTo(px, py);
-            ctx.lineTo(px + s, py);
-            ctx.lineTo(px + s, py + s - r);
-            ctx.arc(px + s, py + s, r, Math.PI * 3 / 2, Math.PI, true);
-            ctx.lineTo(px, py + s);
-        } else {                      // concave arc at bottom-left
-            ctx.moveTo(px, py);
-            ctx.lineTo(px + s, py);
-            ctx.lineTo(px + s, py + s);
-            ctx.lineTo(px + r, py + s);
-            ctx.arc(px, py + s, r, 0, Math.PI * 3 / 2, true);
+        for (let i = 0; i <= N; i++) {
+            const ex = x + cellSize * i / N;
+            const ey = y + A * Math.sin(2 * Math.PI * ex / lam);
+            i === 0 ? ctx.moveTo(ex, ey) : ctx.lineTo(ex, ey);
+        }
+        for (let i = 1; i <= N; i++) {
+            const ey = y + cellSize * i / N;
+            ctx.lineTo(x + cellSize + A * Math.sin(2 * Math.PI * ey / lam), ey);
+        }
+        for (let i = N - 1; i >= 0; i--) {
+            const ex = x + cellSize * i / N;
+            ctx.lineTo(ex, y + cellSize + A * Math.sin(2 * Math.PI * ex / lam));
+        }
+        for (let i = N - 1; i >= 0; i--) {
+            const ey = y + cellSize * i / N;
+            ctx.lineTo(x + A * Math.sin(2 * Math.PI * ey / lam), ey);
         }
         ctx.closePath();
         ctx.fill();
+    } else {
+        // chamfered, jagged, arcs are neighbor-aware and handled entirely in drawModules
+        ctx.fillRect(x, y, cellSize, cellSize);
     }
 }
 
@@ -233,6 +174,96 @@ function drawModules(isDark, count, ox, oy, cs) {
                 const bh = cs * 0.55;
                 fillRR(ox + c * cs, oy + r * cs + (cs - bh) / 2, (end - c + 1) * cs, bh, bh / 2);
                 c = end + 1;
+            }
+        }
+    } else if (selectedShape === 'chamfered') {
+        const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
+        const cl = cs * 0.25;
+        for (let r = 0; r < count; r++) {
+            for (let c = 0; c < count; c++) {
+                if (!isDark(r, c)) continue;
+                const x = ox + c * cs, y = oy + r * cs;
+                if (isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                const L = nd(r, c - 1), R = nd(r, c + 1), T = nd(r - 1, c), B = nd(r + 1, c);
+                const tl = !T && !L, tr = !T && !R, br = !B && !R, bl = !B && !L;
+                ctx.beginPath();
+                ctx.moveTo(tl ? x + cl : x, y);
+                ctx.lineTo(tr ? x + cs - cl : x + cs, y);
+                if (tr) ctx.lineTo(x + cs, y + cl);
+                ctx.lineTo(x + cs, br ? y + cs - cl : y + cs);
+                if (br) ctx.lineTo(x + cs - cl, y + cs);
+                ctx.lineTo(bl ? x + cl : x, y + cs);
+                if (bl) ctx.lineTo(x, y + cs - cl);
+                ctx.lineTo(x, tl ? y + cl : y);
+                if (tl) ctx.lineTo(x + cl, y);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+    } else if (selectedShape === 'jagged') {
+        const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
+        for (let r = 0; r < count; r++) {
+            for (let c = 0; c < count; c++) {
+                if (!isDark(r, c)) continue;
+                const x = ox + c * cs, y = oy + r * cs;
+                if (isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                const L = nd(r, c - 1), R = nd(r, c + 1), T = nd(r - 1, c), B = nd(r + 1, c);
+                ctx.beginPath();
+                if (!L && !R && !T && !B) {
+                    // isolated: diamond
+                    ctx.moveTo(x + cs / 2, y);
+                    ctx.lineTo(x + cs, y + cs / 2);
+                    ctx.lineTo(x + cs / 2, y + cs);
+                    ctx.lineTo(x, y + cs / 2);
+                } else if (R && !L && !T && !B) {
+                    // horizontal run start: spike pointing left
+                    ctx.moveTo(x, y + cs / 2);
+                    ctx.lineTo(x + cs, y);
+                    ctx.lineTo(x + cs, y + cs);
+                } else if (L && !R && !T && !B) {
+                    // horizontal run end: spike pointing right
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + cs, y + cs / 2);
+                    ctx.lineTo(x, y + cs);
+                } else if (B && !T && !L && !R) {
+                    // vertical run start: spike pointing up
+                    ctx.moveTo(x + cs / 2, y);
+                    ctx.lineTo(x + cs, y + cs);
+                    ctx.lineTo(x, y + cs);
+                } else if (T && !B && !L && !R) {
+                    // vertical run end: spike pointing down
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + cs, y);
+                    ctx.lineTo(x + cs / 2, y + cs);
+                } else {
+                    ctx.rect(x, y, cs, cs);
+                }
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+    } else if (selectedShape === 'arcs') {
+        const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
+        const ra = cs * 0.5;
+        for (let r = 0; r < count; r++) {
+            for (let c = 0; c < count; c++) {
+                if (!isDark(r, c)) continue;
+                const x = ox + c * cs, y = oy + r * cs;
+                if (isFinderPattern(r, c, count)) { ctx.fillRect(x, y, cs, cs); continue; }
+                const L = nd(r, c - 1), R = nd(r, c + 1), T = nd(r - 1, c), B = nd(r + 1, c);
+                const tl = !T && !L, tr = !T && !R, br = !B && !R, bl = !B && !L;
+                ctx.beginPath();
+                ctx.moveTo(tl ? x + ra : x, y);
+                ctx.lineTo(tr ? x + cs - ra : x + cs, y);
+                if (tr) ctx.arc(x + cs, y, ra, Math.PI, Math.PI / 2, true);
+                ctx.lineTo(x + cs, br ? y + cs - ra : y + cs);
+                if (br) ctx.arc(x + cs, y + cs, ra, 3 * Math.PI / 2, Math.PI, true);
+                ctx.lineTo(bl ? x + ra : x, y + cs);
+                if (bl) ctx.arc(x, y + cs, ra, 0, 3 * Math.PI / 2, true);
+                ctx.lineTo(x, tl ? y + ra : y);
+                if (tl) ctx.arc(x, y, ra, Math.PI / 2, 0, true);
+                ctx.closePath();
+                ctx.fill();
             }
         }
     } else {
