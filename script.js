@@ -206,7 +206,7 @@ function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
         const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
         const pillCells = new Set();
 
-        // First pass: find horizontal runs where both ends are single-connection → draw as pill
+        // First pass: replace qualifying run-end cells with jagged wedges
         for (let r = 0; r < count; r++) {
             let c = 0;
             while (c < count) {
@@ -214,21 +214,34 @@ function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
                 let end = c;
                 while (end + 1 < count && isDark(r, end + 1) && !(checkFP && isFinderPattern(r, end + 1, count))) end++;
                 const runLen = end - c + 1;
-                // Both ends must have exactly 1 connection (only horizontal, no T/B)
-                const leftFree  = !nd(r, c - 1)   && !nd(r - 1, c)   && !nd(r + 1, c);
-                const rightFree = !nd(r, end + 1)  && !nd(r - 1, end) && !nd(r + 1, end);
-                if (runLen >= 2 && leftFree && rightFree) {
-                    const x = ox + c * cs, y = oy + r * cs, W = runLen * cs;
-                    ctx.beginPath();
-                    ctx.moveTo(x,          y + cs / 2); // left tip
-                    ctx.lineTo(x + cs,     y);           // top-left corner of rect
-                    ctx.lineTo(x + W - cs, y);           // top-right corner of rect
-                    ctx.lineTo(x + W,      y + cs / 2); // right tip
-                    ctx.lineTo(x + W - cs, y + cs);     // bottom-right corner
-                    ctx.lineTo(x + cs,     y + cs);     // bottom-left corner
-                    ctx.closePath();
-                    ctx.fill();
-                    for (let i = c; i <= end; i++) pillCells.add(r * count + i);
+                if (runLen >= 2) {
+                    // Each end qualifies independently: no neighbor except the run itself
+                    const leftQual  = !nd(r, c - 1)   && !nd(r - 1, c)   && !nd(r + 1, c);
+                    const rightQual = !nd(r, end + 1)  && !nd(r - 1, end) && !nd(r + 1, end);
+                    if (leftQual) {
+                        // Wedge points left (away from run)
+                        const x = ox + c * cs, y = oy + r * cs;
+                        ctx.beginPath();
+                        ctx.moveTo(x + cs,     y);
+                        ctx.lineTo(x + cs / 2, y);
+                        ctx.lineTo(x,          y + cs / 2);
+                        ctx.lineTo(x + cs / 2, y + cs);
+                        ctx.lineTo(x + cs,     y + cs);
+                        ctx.closePath(); ctx.fill();
+                        pillCells.add(r * count + c);
+                    }
+                    if (rightQual) {
+                        // Wedge points right (away from run)
+                        const x = ox + end * cs, y = oy + r * cs;
+                        ctx.beginPath();
+                        ctx.moveTo(x,          y);
+                        ctx.lineTo(x + cs / 2, y);
+                        ctx.lineTo(x + cs,     y + cs / 2);
+                        ctx.lineTo(x + cs / 2, y + cs);
+                        ctx.lineTo(x,          y + cs);
+                        ctx.closePath(); ctx.fill();
+                        pillCells.add(r * count + end);
+                    }
                 }
                 c = end + 1;
             }
