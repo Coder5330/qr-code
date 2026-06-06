@@ -245,39 +245,53 @@ function drawModules(isDark, count, ox, oy, cs) {
             }
         }
     } else if (selectedShape === 'arcs') {
-        // Subtractive layering — no path merging, no neighbor math:
-        // 1) Solid black squares everywhere
-        // 2) White square punches one corner per cell
-        // 3) Black quarter-circle arc restores the rounded portion
-        // Finder patterns are left completely untouched.
-        const ar = cs * 0.5;
+        // Subtractive: solid squares first, then per exposed corner:
+        // white square (same size as cell) punches the corner,
+        // black quarter-circle arc restores the curved portion.
+        // Only applied where BOTH adjacent neighbors are absent.
+        const nd = (r2, c2) => r2 >= 0 && r2 < count && c2 >= 0 && c2 < count && isDark(r2, c2);
+        const ar = cs;
 
         // Pass 1: solid black squares
         for (let r = 0; r < count; r++)
             for (let c = 0; c < count; c++)
                 if (isDark(r, c)) ctx.fillRect(ox + c * cs, oy + r * cs, cs, cs);
 
-        // Passes 2+3: per non-finder cell, punch white then restore arc
+        // Pass 2: subtractive arc at each exposed outer corner
         for (let r = 0; r < count; r++) {
             for (let c = 0; c < count; c++) {
                 if (!isDark(r, c) || isFinderPattern(r, c, count)) continue;
                 const x = ox + c * cs, y = oy + r * cs;
-                const corner = (c + r) % 4; // rotate corner: 0=TL 1=TR 2=BR 3=BL
+                const L = nd(r, c-1), R = nd(r, c+1), T = nd(r-1, c), B = nd(r+1, c);
 
-                ctx.fillStyle = '#fff';
-                if      (corner === 0) ctx.fillRect(x,       y,       ar, ar);
-                else if (corner === 1) ctx.fillRect(x+cs-ar, y,       ar, ar);
-                else if (corner === 2) ctx.fillRect(x+cs-ar, y+cs-ar, ar, ar);
-                else                   ctx.fillRect(x,       y+cs-ar, ar, ar);
-
-                ctx.fillStyle = '#111';
-                ctx.beginPath();
-                if      (corner === 0) { ctx.moveTo(x,    y);    ctx.arc(x,    y,    ar, 0,           Math.PI/2,   false); }
-                else if (corner === 1) { ctx.moveTo(x+cs, y);    ctx.arc(x+cs, y,    ar, Math.PI/2,   Math.PI,     false); }
-                else if (corner === 2) { ctx.moveTo(x+cs, y+cs); ctx.arc(x+cs, y+cs, ar, Math.PI,     3*Math.PI/2, false); }
-                else                   { ctx.moveTo(x,    y+cs); ctx.arc(x,    y+cs, ar, 3*Math.PI/2, 2*Math.PI,   false); }
-                ctx.closePath();
-                ctx.fill();
+                // TL exposed
+                if (!T && !L) {
+                    ctx.fillStyle = '#fff'; ctx.fillRect(x, y, ar, ar);
+                    ctx.fillStyle = '#111'; ctx.beginPath();
+                    ctx.moveTo(x, y); ctx.arc(x, y, ar, 0, Math.PI/2, false);
+                    ctx.closePath(); ctx.fill();
+                }
+                // TR exposed
+                if (!T && !R) {
+                    ctx.fillStyle = '#fff'; ctx.fillRect(x+cs-ar, y, ar, ar);
+                    ctx.fillStyle = '#111'; ctx.beginPath();
+                    ctx.moveTo(x+cs, y); ctx.arc(x+cs, y, ar, Math.PI/2, Math.PI, false);
+                    ctx.closePath(); ctx.fill();
+                }
+                // BR exposed
+                if (!B && !R) {
+                    ctx.fillStyle = '#fff'; ctx.fillRect(x+cs-ar, y+cs-ar, ar, ar);
+                    ctx.fillStyle = '#111'; ctx.beginPath();
+                    ctx.moveTo(x+cs, y+cs); ctx.arc(x+cs, y+cs, ar, Math.PI, 3*Math.PI/2, false);
+                    ctx.closePath(); ctx.fill();
+                }
+                // BL exposed
+                if (!B && !L) {
+                    ctx.fillStyle = '#fff'; ctx.fillRect(x, y+cs-ar, ar, ar);
+                    ctx.fillStyle = '#111'; ctx.beginPath();
+                    ctx.moveTo(x, y+cs); ctx.arc(x, y+cs, ar, 3*Math.PI/2, 2*Math.PI, false);
+                    ctx.closePath(); ctx.fill();
+                }
             }
         }
         ctx.fillStyle = '#111';
