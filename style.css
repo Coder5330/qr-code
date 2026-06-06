@@ -320,8 +320,8 @@ canvas {
 .modal-box {
     background: #fff;
     border-radius: 16px;
-    padding: 32px 28px 24px;
-    max-width: 340px;
+    padding: 32px 36px 24px;
+    max-width: 400px;
     width: 90%;
     box-shadow: 0 8px 40px rgba(0,0,0,0.18);
     display: flex;
@@ -361,6 +361,8 @@ canvas {
     color: #666;
     cursor: pointer;
     margin-top: 4px;
+    align-self: flex-start;
+    white-space: nowrap;
 }
 
 .modal-btn {
