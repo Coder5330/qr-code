@@ -260,7 +260,21 @@ function drawModules(isDark, count, ox, oy, cs) {
                 const cv = cs * 0.55;
 
                 if (neighbors >= 2) {
-                    ctx.fillRect(x, y, cs, cs);
+                    // round exposed corners only
+                    const ar = cs * 0.25;
+                    const tl = !T && !L, tr = !T && !R, br = !B && !R, bl = !B && !L;
+                    ctx.beginPath();
+                    ctx.moveTo(tl ? x + ar : x, y);
+                    ctx.lineTo(tr ? x + cs - ar : x + cs, y);
+                    if (tr) ctx.arc(x + cs - ar, y + ar, ar, 3 * Math.PI / 2, 0, false);
+                    ctx.lineTo(x + cs, br ? y + cs - ar : y + cs);
+                    if (br) ctx.arc(x + cs - ar, y + cs - ar, ar, 0, Math.PI / 2, false);
+                    ctx.lineTo(bl ? x + ar : x, y + cs);
+                    if (bl) ctx.arc(x + ar, y + cs - ar, ar, Math.PI / 2, Math.PI, false);
+                    ctx.lineTo(x, tl ? y + ar : y);
+                    if (tl) ctx.arc(x + ar, y + ar, ar, Math.PI, 3 * Math.PI / 2, false);
+                    ctx.closePath();
+                    ctx.fill();
                 } else if (neighbors === 1) {
                     // Right-angle triangle with strongly curved hypotenuse
                     ctx.beginPath();
@@ -288,11 +302,11 @@ function drawModules(isDark, count, ox, oy, cs) {
                     ctx.closePath();
                     ctx.fill();
                 } else {
-                    // dian 丶: lens shape along NW-SE diagonal, skinny at both TL and BR tips
+                    // dian 丶: fat lens along NW-SE diagonal, pointed at both tips
                     ctx.beginPath();
-                    ctx.moveTo(x + cs * 0.12, y + cs * 0.12);
-                    ctx.quadraticCurveTo(x + cs * 0.82, y + cs * 0.18, x + cs * 0.88, y + cs * 0.88);
-                    ctx.quadraticCurveTo(x + cs * 0.18, y + cs * 0.82, x + cs * 0.12, y + cs * 0.12);
+                    ctx.moveTo(x + cs * 0.05, y + cs * 0.05);
+                    ctx.quadraticCurveTo(x + cs * 0.92, y + cs * 0.05, x + cs * 0.95, y + cs * 0.95);
+                    ctx.quadraticCurveTo(x + cs * 0.08, y + cs * 0.95, x + cs * 0.05, y + cs * 0.05);
                     ctx.fill();
                 }
             }
