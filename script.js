@@ -542,10 +542,12 @@ function downloadQR() {
 
 async function copyQR() {
     try {
-        const blob = await new Promise((resolve) => canvas.toBlob(resolve));
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+        // Pass a Promise directly to ClipboardItem — required for Safari
+        await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": new Promise(resolve => canvas.toBlob(resolve)) })
+        ]);
     } catch {
-        alert("Couldn't copy — your browser may not support image clipboard, or the page isn't on HTTPS.");
+        alert("Couldn't copy — try downloading instead.");
     }
 }
 
