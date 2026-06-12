@@ -4,13 +4,31 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>QR Code Generator</title>
-        <link rel="stylesheet" href="style.css?v=3">
+        <link rel="stylesheet" href="style.css?v=4">
     </head>
     <body>
         <div class="container">
             <div class="left">
-                <p class="section-label">1. Enter URL</p>
+                <p class="section-label">1. Enter Data</p>
+                <div class="input-type-bar">
+                    <button class="type-btn active" data-type="url"   onclick="selectInputType('url')">URL</button>
+                    <button class="type-btn"         data-type="text"  onclick="selectInputType('text')">Text</button>
+                    <button class="type-btn"         data-type="email" onclick="selectInputType('email')">Email</button>
+                    <button class="type-btn"         data-type="phone" onclick="selectInputType('phone')">Phone</button>
+                    <button class="type-btn"         data-type="wifi"  onclick="selectInputType('wifi')">Wi-Fi</button>
+                </div>
                 <input id="data" type="text" placeholder="https://">
+                <div id="wifi-fields" class="wifi-fields">
+                    <input id="wifi-ssid" type="text" placeholder="Network name (SSID)" oninput="drawQR()">
+                    <div class="wifi-row">
+                        <input id="wifi-pass" type="password" placeholder="Password" oninput="drawQR()">
+                        <select id="wifi-sec" onchange="drawQR()">
+                            <option value="WPA">WPA/WPA2</option>
+                            <option value="WEP">WEP</option>
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                </div>
                 <p class="section-label">2. Choose Style</p>
                 <div class="style-menu-bar">
                     <button class="menu-button" onclick="toggleMenu('frame')">Frame</button>
@@ -230,12 +248,31 @@
                         <input type="file" id="logoUpload" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
                     </button>
                 </div>
+                <p class="section-label">3. Colors</p>
+                <div class="color-row">
+                    <label class="color-label">
+                        QR
+                        <input type="color" id="fgColorPicker" value="#111111" oninput="setFgColor(this.value)">
+                    </label>
+                    <label class="color-label">
+                        Background
+                        <input type="color" id="bgColorPicker" value="#ffffff" oninput="setBgColor(this.value)">
+                    </label>
+                </div>
             </div>
 
             <div class="right">
-                <p class="section-label">3. Download</p>
+                <p class="section-label">4. Download</p>
                 <canvas id="qr"></canvas>
                 <p id="error"></p>
+                <div class="size-bar">
+                    <span class="size-bar-label">Size</span>
+                    <div class="size-btns">
+                        <button class="size-btn"        data-size="512"  onclick="selectDownloadSize(512)">512</button>
+                        <button class="size-btn active" data-size="1024" onclick="selectDownloadSize(1024)">1024</button>
+                        <button class="size-btn"        data-size="2048" onclick="selectDownloadSize(2048)">2048</button>
+                    </div>
+                </div>
                 <button id="download" class="download-button" onclick="downloadQR()">Download</button>
                 <button id="copy" class="download-button secondary" onclick="copyQR()">Copy to Clipboard</button>
             </div>
@@ -255,6 +292,6 @@
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-        <script src="script.js?v=27"></script>
+        <script src="script.js?v=28"></script>
     </body>
 </html>

@@ -46,6 +46,10 @@ let selectedShape = 'default';
 let selectedLogo = 'none';
 let selectedMenu = 'frame';
 let customLogoImage = null;
+let selectedInputType = 'url';
+let fgColor = '#111111';
+let bgColor = '#ffffff';
+let downloadSize = 1024;
 
 // ── Utilities ──────────────────────────────────────────────────────────────
 
@@ -57,6 +61,44 @@ function normalizeUrl(raw) {
     const url = new URL(s);
     if (!url.hostname.includes(".")) return null;
     return url.href;
+}
+
+function getQRContent() {
+    switch (selectedInputType) {
+        case 'url':   return normalizeUrl(input.value);
+        case 'text':  return input.value.trim() || null;
+        case 'email': { const v = input.value.trim(); return v ? `mailto:${v}` : null; }
+        case 'phone': { const v = input.value.trim(); return v ? `tel:${v.replace(/\s+/g, '')}` : null; }
+        case 'wifi': {
+            const ssid = document.getElementById('wifi-ssid').value.trim();
+            if (!ssid) return null;
+            const pass = document.getElementById('wifi-pass').value;
+            const sec  = document.getElementById('wifi-sec').value;
+            const esc  = s => s.replace(/[\\;,"]/g, c => '\\' + c);
+            return `WIFI:T:${sec};S:${esc(ssid)};P:${esc(pass)};;`;
+        }
+    }
+}
+
+function selectInputType(type) {
+    selectedInputType = type;
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.type-btn[data-type="${type}"]`).classList.add('active');
+    const isWifi = type === 'wifi';
+    document.getElementById('wifi-fields').style.display = isWifi ? 'flex' : 'none';
+    input.style.display = isWifi ? 'none' : '';
+    const placeholders = { url: 'https://', text: 'Enter any text...', email: 'user@example.com', phone: '+1 555 000 0000' };
+    if (!isWifi) input.placeholder = placeholders[type] || '';
+    drawQR();
+}
+
+function setFgColor(color) { fgColor = color; drawQR(); }
+function setBgColor(color) { bgColor = color; drawQR(); }
+
+function selectDownloadSize(size) {
+    downloadSize = size;
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.size-btn[data-size="${size}"]`).classList.add('active');
 }
 
 function fillRR(x, y, w, h, r) {
@@ -144,7 +186,7 @@ function drawModule(x, y, cellSize = CELL, forceSquare = false) {
 
 // Neighbor-aware module rendering — handles blob merging (rounded) and run-merging (horizontal)
 function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
-    ctx.fillStyle = '#111';
+    ctx.fillStyle = fgColor;
     if (selectedShape === 'rounded') {
         const rad = cs * 0.42;
         for (let r = 0; r < count; r++) {
@@ -324,7 +366,7 @@ function drawModules(isDark, count, ox, oy, cs, checkFP = true) {
 // ── Frame drawing ──────────────────────────────────────────────────────────
 
 function drawFrameBack(W, H, qrSide, fp, ft, fb) {
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, W, H);
 
     switch (selectedFrame) {
@@ -344,7 +386,7 @@ function drawFrameBack(W, H, qrSide, fp, ft, fb) {
         case 'rounded-bottom':
             ctx.fillStyle = '#111';
             fillRR(0, 0, W, H, 14);
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = bgColor;
             fillRR(fp - 4, fp - 4, W - (fp - 4) * 2, qrSide + fp * 2 - 8, 4);
             break;
 
@@ -358,7 +400,7 @@ function drawFrameBack(W, H, qrSide, fp, ft, fb) {
             ctx.fillStyle = '#111';
             fillRR(0, 0, W, H, 20);
             // Screen
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = bgColor;
             fillRR(10, ft - 8, W - 20, qrSide + fp * 2 + 16, 4);
             // Camera
             ctx.fillStyle = '#555';
@@ -375,7 +417,7 @@ function drawFrameBack(W, H, qrSide, fp, ft, fb) {
 
         case 'clipboard': {
             // Board body
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = bgColor;
             fillRR(0, ft / 2, W, H - ft / 2, 8);
             ctx.strokeStyle = '#111';
             ctx.lineWidth = 2.5;
@@ -390,7 +432,7 @@ function drawFrameBack(W, H, qrSide, fp, ft, fb) {
             fillRR((W - clipW) / 2, 0, clipW, clipH, 5);
             const holeW = clipW * 0.5;
             const holeH = clipH * 0.48;
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = bgColor;
             fillRR((W - holeW) / 2, clipH * 0.2, holeW, holeH, 3);
             break;
         }
@@ -436,7 +478,7 @@ function drawLogo(ox, oy, count) {
     const lx = cx - ls / 2, ly = cy - ls / 2;
     const pad = 5;
 
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = bgColor;
     fillRR(lx - pad, ly - pad, ls + pad * 2, ls + pad * 2, 8);
 
     if (selectedLogo === 'upload' && customLogoImage) {
@@ -523,36 +565,40 @@ function renderMatrix(isDark, count, alpha = 1) {
 
 // ── Main QR draw ───────────────────────────────────────────────────────────
 
-function drawQR(data) {
+function drawQR() {
     const showDefault = () => renderMatrix((r, c) => DEFAULT_MATRIX[r][c] === '1', DEFAULT_MATRIX.length, 0.5);
 
-    if (!data.trim()) {
-        errorMsg.textContent = "";
+    const data = getQRContent();
+
+    if (!data) {
+        const rawInput = selectedInputType === 'wifi'
+            ? document.getElementById('wifi-ssid').value
+            : input.value;
+        errorMsg.textContent = (selectedInputType === 'url' && rawInput.trim())
+            ? "That doesn't look like a valid URL."
+            : '';
         downloadBtn.disabled = true;
         copyBtn.disabled = true;
         showDefault();
         return;
     }
 
-    const url = normalizeUrl(data);
-    if (!url) {
-        errorMsg.textContent = "That doesn't look like a valid URL.";
-        downloadBtn.disabled = true;
-        copyBtn.disabled = true;
-        showDefault();
-        return;
-    }
-
-    errorMsg.textContent = "";
+    errorMsg.textContent = '';
     downloadBtn.disabled = false;
     copyBtn.disabled = false;
 
-    const ecLevel = selectedLogo !== 'none' ? 'H' : 'M';
-    const qr = qrcode(0, ecLevel);
-    qr.addData(url);
-    qr.make();
-
-    renderMatrix((r, c) => qr.isDark(r, c), qr.getModuleCount());
+    try {
+        const ecLevel = selectedLogo !== 'none' ? 'H' : 'M';
+        const qr = qrcode(0, ecLevel);
+        qr.addData(data);
+        qr.make();
+        renderMatrix((r, c) => qr.isDark(r, c), qr.getModuleCount());
+    } catch {
+        errorMsg.textContent = 'Content is too long for a QR code.';
+        downloadBtn.disabled = true;
+        copyBtn.disabled = true;
+        showDefault();
+    }
 }
 
 // ── Circle frame ──────────────────────────────────────────────────────────
@@ -593,8 +639,8 @@ function drawCircleFrame(qr, count, alpha = 1) {
     const qrLeft = Cx - (R * Math.SQRT2) / 2;
     const qrTop  = Cy - (R * Math.SQRT2) / 2;
 
-    // White background
-    ctx.fillStyle = '#fff';
+    // Background
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, W, H);
 
     // Clip to circle
@@ -602,7 +648,7 @@ function drawCircleFrame(qr, count, alpha = 1) {
     ctx.beginPath();
     ctx.arc(Cx, Cy, R, 0, Math.PI * 2);
     ctx.clip();
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = bgColor;
     ctx.fill();
 
     // How many extra cells fit in the arc bulge beyond QR sides?
@@ -610,7 +656,7 @@ function drawCircleFrame(qr, count, alpha = 1) {
 
     // Corner decoration: collect all positions first, then render with the chosen shape
     // (using drawModules so neighbor-aware shapes like arcs/chamfered/jagged work correctly)
-    ctx.fillStyle = '#111';
+    ctx.fillStyle = fgColor;
     const ec = extraCells;
     const cornerSet = new Set();
     for (let row = -ec; row < totalCells + ec; row++) {
@@ -654,7 +700,7 @@ function drawCircleFrame(qr, count, alpha = 1) {
         const lcx  = ox + (count * cell) / 2;
         const lcy  = oy + (count * cell) / 2;
         const lpad = cell * 0.5;
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = bgColor;
         fillRR(lcx - ls / 2 - lpad, lcy - ls / 2 - lpad, ls + lpad * 2, ls + lpad * 2, 6);
         if (selectedLogo === 'upload' && customLogoImage) {
             ctx.save();
@@ -688,13 +734,13 @@ function setSelected(panelSel, attr, value) {
 function selectFrame(frame) {
     selectedFrame = frame;
     setSelected('.style-frame-choices', 'data-frame', frame);
-    drawQR(input.value);
+    drawQR();
 }
 
 function selectShape(shape) {
     selectedShape = shape;
     setSelected('.style-shape-choices', 'data-shape', shape);
-    drawQR(input.value);
+    drawQR();
     if (shape === 'wavy' && !localStorage.getItem('wavyWarnDismissed')) {
         document.getElementById('wavy-modal').style.display = 'flex';
     }
@@ -710,7 +756,7 @@ function closeWavyModal() {
 function selectLogo(logo) {
     selectedLogo = logo;
     setSelected('.style-logo-choices', 'data-logo', logo);
-    drawQR(input.value);
+    drawQR();
 }
 
 function handleLogoUpload(event) {
@@ -722,7 +768,7 @@ function handleLogoUpload(event) {
         selectedLogo = 'upload';
         document.querySelectorAll('.style-logo-choices .choice-btn').forEach(b => b.classList.remove('selected'));
         document.querySelector('.upload-btn').classList.add('selected');
-        drawQR(input.value);
+        drawQR();
     };
     img.src = URL.createObjectURL(file);
 }
@@ -738,11 +784,18 @@ function toggleMenu(menu) {
 // ── Download / Copy ────────────────────────────────────────────────────────
 
 function downloadQR() {
-    canvas.toBlob((blob) => {
+    const scale = downloadSize / canvas.width;
+    const off = document.createElement('canvas');
+    off.width = downloadSize;
+    off.height = Math.round(canvas.height * scale);
+    const offCtx = off.getContext('2d');
+    offCtx.imageSmoothingEnabled = false;
+    offCtx.drawImage(canvas, 0, 0, off.width, off.height);
+    off.toBlob((blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "qrcode.png";
+        a.download = `qrcode-${downloadSize}.png`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -774,6 +827,6 @@ canvas.height = canvas.width = 330;
 setSelected('.style-frame-choices', 'data-frame', selectedFrame);
 setSelected('.style-shape-choices', 'data-shape', selectedShape);
 setSelected('.style-logo-choices', 'data-logo', selectedLogo);
-drawQR(input.value);
+drawQR();
 toggleMenu(selectedMenu);
-input.addEventListener("input", () => drawQR(input.value));
+input.addEventListener("input", () => drawQR());
