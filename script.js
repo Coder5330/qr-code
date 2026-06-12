@@ -67,8 +67,19 @@ function getQRContent() {
     switch (selectedInputType) {
         case 'url':   return normalizeUrl(input.value);
         case 'text':  return input.value.trim() || null;
-        case 'email': { const v = input.value.trim(); return v ? `mailto:${v}` : null; }
-        case 'phone': { const v = input.value.trim(); return v ? `tel:${v.replace(/\s+/g, '')}` : null; }
+        case 'email': {
+            const v = input.value.trim();
+            if (!v) return null;
+            // Basic email format: something@something.tld
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return null;
+            return `mailto:${v}`;
+        }
+        case 'phone': {
+            const v = input.value.trim();
+            if (!v) return null;
+            if (!/\d/.test(v)) return null; // must contain at least one digit
+            return `tel:${v.replace(/\s+/g, '')}`;
+        }
         case 'wifi': {
             const ssid = document.getElementById('wifi-ssid').value.trim();
             if (!ssid) return null;
@@ -78,6 +89,19 @@ function getQRContent() {
             return `WIFI:T:${sec};S:${esc(ssid)};P:${esc(pass)};;`;
         }
     }
+}
+
+// Called from the main data input's oninput — filters phone characters live
+function handleDataInput() {
+    if (selectedInputType === 'phone') {
+        const cur = input.selectionStart;
+        const filtered = input.value.replace(/[^\d\s\+\-\(\)\.]/g, '');
+        if (input.value !== filtered) {
+            input.value = filtered;
+            input.setSelectionRange(cur - 1, cur - 1);
+        }
+    }
+    drawQR();
 }
 
 function selectInputType(type) {
@@ -571,12 +595,15 @@ function drawQR() {
     const data = getQRContent();
 
     if (!data) {
-        const rawInput = selectedInputType === 'wifi'
-            ? document.getElementById('wifi-ssid').value
-            : input.value;
-        errorMsg.textContent = (selectedInputType === 'url' && rawInput.trim())
-            ? "That doesn't look like a valid URL."
-            : '';
+        const raw = selectedInputType === 'wifi'
+            ? document.getElementById('wifi-ssid').value.trim()
+            : input.value.trim();
+        const errors = {
+            url:   "That doesn't look like a valid URL.",
+            email: "Enter a valid email address (e.g. user@example.com).",
+            phone: "Enter a valid phone number.",
+        };
+        errorMsg.textContent = raw ? (errors[selectedInputType] || '') : '';
         downloadBtn.disabled = true;
         copyBtn.disabled = true;
         showDefault();
@@ -829,4 +856,4 @@ setSelected('.style-shape-choices', 'data-shape', selectedShape);
 setSelected('.style-logo-choices', 'data-logo', selectedLogo);
 drawQR();
 toggleMenu(selectedMenu);
-input.addEventListener("input", () => drawQR());
+// input oninput is handled by handleDataInput() inline in the HTML

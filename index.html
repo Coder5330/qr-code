@@ -17,7 +17,7 @@
                     <button class="type-btn"         data-type="phone" onclick="selectInputType('phone')">Phone</button>
                     <button class="type-btn"         data-type="wifi"  onclick="selectInputType('wifi')">Wi-Fi</button>
                 </div>
-                <input id="data" type="text" placeholder="https://">
+                <input id="data" type="text" placeholder="https://" oninput="handleDataInput()">
                 <div id="wifi-fields" class="wifi-fields">
                     <input id="wifi-ssid" type="text" placeholder="Network name (SSID)" oninput="drawQR()">
                     <div class="wifi-row">
@@ -292,6 +292,6 @@
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-        <script src="script.js?v=28"></script>
+        <script src="script.js?v=29"></script>
     </body>
 </html>
