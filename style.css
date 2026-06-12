@@ -356,13 +356,14 @@ canvas {
 .modal-check {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 7px;
     font-size: 13px;
     color: #666;
     cursor: pointer;
     margin-top: 4px;
-    align-self: flex-start;
     white-space: nowrap;
+    width: 100%;
 }
 
 .modal-btn {
