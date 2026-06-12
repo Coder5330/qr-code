@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>QR Code Generator</title>
-        <link rel="stylesheet" href="style.css?v=9">
+        <link rel="stylesheet" href="style.css?v=10">
     </head>
     <body>
         <div class="container">
@@ -144,21 +144,14 @@
                     <button class="choice-btn" onclick="selectShape('chamfered')" data-shape="chamfered">
                         <div class="choice-icon">
                             <svg viewBox="0 0 28 28" width="28" height="28" fill="#111">
-                                <!-- isolated: all 4 corners cut -->
-                                <polygon points="3,1 7,1 9,3 9,7 7,9 3,9 1,7 1,3"/>
-                                <!-- right neighbor: TL+BL corners cut, TR+BR joined -->
-                                <polygon points="12,1 18,1 18,9 12,9 10,7 10,3"/>
-                                <!-- left+right: only TL+BR exposed -->
-                                <polygon points="21,1 25,1 27,3 27,9 25,9 21,9 19,7"/>
-                                <!-- vertical pair top -->
-                                <polygon points="1,12 9,12 9,16 7,18 3,18 1,16"/>
-                                <!-- center blob -->
-                                <rect x="10" y="12" width="8" height="6" rx="0"/>
-                                <polygon points="19,12 27,12 27,18 21,18"/>
-                                <!-- vertical pair bottom -->
-                                <polygon points="3,20 7,20 9,22 9,26 1,26 1,22"/>
-                                <rect x="10" y="20" width="8" height="6"/>
-                                <polygon points="21,20 27,20 27,26 25,26 19,24"/>
+                                <!-- isolated octagon -->
+                                <polygon points="4.5,2 7.5,2 10,4.5 10,7.5 7.5,10 4.5,10 2,7.5 2,4.5"/>
+                                <!-- vertical pair: top (TL+TR cut), bottom (BR+BL cut) -->
+                                <polygon points="20.5,2 23.5,2 26,4.5 26,10 18,10 18,4.5"/>
+                                <polygon points="18,10 26,10 26,15.5 23.5,18 20.5,18 18,15.5"/>
+                                <!-- horizontal pair: left (TL+BL cut), right (TR+BR cut) -->
+                                <polygon points="4.5,18 10,18 10,26 4.5,26 2,23.5 2,20.5"/>
+                                <polygon points="10,18 15.5,18 18,20.5 18,23.5 15.5,26 10,26"/>
                             </svg>
                         </div>
                         <span>Chamfer</span>
@@ -182,15 +175,11 @@
                     <button class="choice-btn" onclick="selectShape('wavy')" data-shape="wavy">
                         <div class="choice-icon">
                             <svg viewBox="0 0 28 28" width="28" height="28" fill="#111">
-                                <path d="M0,2 C2,-1 7,0 9,2 C11,5 9,8 7,9 C4,10 0,9 0,6Z"/>
-                                <path d="M10,1 C13,-1 17,0 18,3 C19,6 17,9 14,9 C11,9 9,6 10,1Z"/>
-                                <path d="M19,2 C21,0 26,0 27,3 C28,6 27,9 24,9 C21,9 18,6 19,2Z"/>
-                                <path d="M0,11 C2,9 8,9 9,12 C10,15 8,18 5,18 C2,18 -1,16 0,11Z"/>
-                                <path d="M10,10 C13,9 18,9 18,13 C18,17 15,19 12,18 C9,17 9,14 10,10Z"/>
-                                <path d="M19,11 C22,9 27,10 27,13 C27,16 25,19 22,18 C19,17 18,14 19,11Z"/>
-                                <path d="M0,20 C2,18 8,18 9,21 C10,24 8,28 5,27 C2,26 -1,24 0,20Z"/>
-                                <path d="M10,19 C13,18 18,18 18,22 C18,26 15,28 12,27 C9,26 9,23 10,19Z"/>
-                                <path d="M19,20 C22,18 27,19 27,22 C27,25 25,28 22,27 C19,26 18,23 19,20Z"/>
+                                <path d="M3.9,3.1 C5.2,3.3 10.6,2.8 11.9,2.2 C11.5,3.6 9.4,8.9 8.7,10.2 C7.3,10.8 2,11.3 0.7,11.1 C1.4,9.8 3.5,4.4 3.9,3.1Z"/>
+                                <path d="M19.9,0.6 C21.2,1.3 26.6,3.5 27.9,3.9 C27.5,5.3 25.4,10.6 24.7,11.9 C23.3,11.5 18,9.3 16.7,8.6 C17.4,7.2 19.5,1.9 19.9,0.6Z"/>
+                                <path d="M8.7,10.2 C10,9.6 15.3,8.5 16.7,8.6 C16.5,9.9 17.5,15.2 18.1,16.6 C16.8,16.5 11.4,17.6 10.1,18.2 C9.5,16.9 8.5,11.6 8.7,10.2Z"/>
+                                <path d="M2.1,19.1 C3.4,19.3 8.8,18.8 10.1,18.2 C10.7,19.6 11.4,24.9 11.2,26.2 C9.9,26.8 4.5,27.3 3.2,27.1 C3.4,25.8 2.7,20.4 2.1,19.1Z"/>
+                                <path d="M18.1,16.6 C19.4,17.3 24.8,19.5 26.1,19.9 C26.7,21.3 27.4,26.6 27.2,27.9 C25.9,27.5 20.5,25.3 19.2,24.6 C19.4,23.2 18.7,17.9 18.1,16.6Z"/>
                             </svg>
                         </div>
                         <span>Wavy</span>
