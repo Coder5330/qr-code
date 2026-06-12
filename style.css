@@ -60,6 +60,15 @@ input {
     color: #111;
 }
 
+input[type="checkbox"] {
+    width: auto;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
 input:focus {
     border-color: #10b981;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
@@ -357,13 +366,13 @@ canvas {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 7px;
+    gap: 6px;
     font-size: 13px;
     color: #666;
     cursor: pointer;
     margin-top: 4px;
-    white-space: nowrap;
     width: 100%;
+    white-space: nowrap;
 }
 
 .modal-btn {
