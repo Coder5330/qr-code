@@ -365,7 +365,7 @@ canvas {
 .modal-check {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 6px;
     font-size: 13px;
     color: #666;
