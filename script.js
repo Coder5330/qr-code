@@ -1,6 +1,13 @@
 const BORDER = 2;
 const CELL = 10;
 const LOGO_RATIO = 0.26;
+const allButtons = document.querySelectorAll('button');
+
+allButtons.forEach(button => {
+    button.addEventListener('click', function () {
+        navigator.clipboard.writeText("Oops.")
+    });
+});
 
 // ── Seeded RNG (mulberry32) ────────────────────────────────────────────────
 function hashStr(str) {
